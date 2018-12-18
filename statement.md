@@ -1,8 +1,3 @@
-# Welcome!
-
-This C# template lets you get started quickly with a simple one-page playground.
-
-```C# runnable
 
 using System;
 
@@ -12,9 +7,13 @@ class Maze
     const int HEIGHT = 5;
     const bool SOLVE_BASIC_BFS = true;
     const bool SOLVE_FAST_BFS = true;
-// { autofold    
+    // Maze generator { autofold    
     const int HEIGHT_CHARS = HEIGHT * 2 + 1;
     const int WIDTH_CHARS = WIDTH * 2 + 1;
+    const int START_X = 0;
+    const int START_Y = 0;
+    const int GOAL_X = WIDTH - 1;
+    const int GOAL_Y = HEIGHT - 1;
     static Random rnd = new Random();
     static MazeNode[] fastNodes = new MazeNode[WIDTH * HEIGHT];
 
@@ -37,20 +36,20 @@ class Maze
     static void DrawMaze()
     {
         char[,] map = new char[WIDTH * 2 + 1, HEIGHT * 2 + 1];
-            
+
         for (int j = 0; j < HEIGHT; j++)
         {
-            for (int i = 0; i < WIDTH; i++) 
+            for (int i = 0; i < WIDTH; i++)
             {
                 MazeNode node = fastNodes[i + j * WIDTH];
                 map[i * 2, j * 2] = '#';
                 map[i * 2 + 1, j * 2 + 1] = ' ';
-                    
-                if((node.connections & 1) > 0)
+
+                if ((node.connections & 1) > 0)
                     map[i * 2, j * 2 + 1] = ' ';
                 else
                     map[i * 2, j * 2 + 1] = '#';
-                    
+
                 if ((node.connections & 8) > 0)
                     map[i * 2 + 1, j * 2] = ' ';
                 else
@@ -59,12 +58,14 @@ class Maze
         }
 
         for (int j = 0; j < HEIGHT_CHARS; j++)
-            map[WIDTH_CHARS-1, j] = '#';
-       
+            map[WIDTH_CHARS - 1, j] = '#';
 
-        for (int i = 0; i < WIDTH_CHARS-1; i++)
-            map[i, HEIGHT_CHARS-1] = '#';
- 
+
+        for (int i = 0; i < WIDTH_CHARS - 1; i++)
+            map[i, HEIGHT_CHARS - 1] = '#';
+
+        map[START_X * 2 + 1, START_Y * 2 + 1] = 'P';
+        map[GOAL_X * 2 + 1, GOAL_Y * 2 + 1] = 'X';
 
         for (int j = 0; j < HEIGHT_CHARS; j++)
         {
@@ -97,7 +98,7 @@ class Maze
 
             //Mark direction as explored
             n.explored &= ~explore;
-              
+
             //Depending on chosen direction
             switch (explore)
             {
@@ -114,14 +115,14 @@ class Maze
                     if (n.y + 1 < HEIGHT)
                     {
                         x = n.x;
-                        y = n.y + 1;     
+                        y = n.y + 1;
                     }
                     else continue;
                     break;
 
-                    
+
                 case 4: //Check if it's possible to go right	
-                    if (n.x + 1  < WIDTH)
+                    if (n.x + 1 < WIDTH)
                     {
                         x = n.x + 1;
                         y = n.y;
@@ -129,12 +130,12 @@ class Maze
                     else continue;
                     break;
 
-                    
+
                 case 8: //Check if it's possible to go up
                     if (n.y - 1 >= 0)
                     {
                         x = n.x;
-                        y = n.y - 1; 
+                        y = n.y - 1;
                     }
                     else continue;
                     break;
@@ -159,12 +160,11 @@ class Maze
         MazeNode start = fastNodes[0];
         start.parent = start;
         MazeNode last = Link(start);
-        while(last != start)
+        while (last != start)
             last = Link(last);
         DrawMaze();
+        Console.ReadLine();
     }
 }
 
 // }
-```
-
