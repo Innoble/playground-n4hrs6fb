@@ -8,8 +8,8 @@ using System;
 
 class Program
 {
-    const int WIDTH = 30;
-    const int HEIGHT = 20;
+    const int WIDTH = 20;
+    const int HEIGHT = 5;
 // { autofold    
     const int HEIGHT_CHARS = HEIGHT * 2 + 1;
     const int WIDTH_CHARS = WIDTH * 2 + 1;
