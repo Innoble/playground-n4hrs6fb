@@ -10,6 +10,8 @@ class Maze
 {
     const int WIDTH = 20;
     const int HEIGHT = 5;
+    const bool SOLVE_BASIC_BFS = true;
+    const bool SOLVE_FAST_BFS = true;
 // { autofold    
     const int HEIGHT_CHARS = HEIGHT * 2 + 1;
     const int WIDTH_CHARS = WIDTH * 2 + 1;
