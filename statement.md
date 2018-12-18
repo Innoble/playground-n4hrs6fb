@@ -2,12 +2,17 @@
 
 using System;
 
+
+using System;
+using System.Collections.Generic;
+
 class Maze
 {
     const int WIDTH = 20;
     const int HEIGHT = 5;
     const bool SOLVE_BASIC_BFS = true;
     const bool SOLVE_FAST_BFS = true;
+    const int MAZE_SEED = 0;
     // Maze generator { autofold    
     const int HEIGHT_CHARS = HEIGHT * 2 + 1;
     const int WIDTH_CHARS = WIDTH * 2 + 1;
@@ -15,8 +20,9 @@ class Maze
     const int START_Y = 0;
     const int GOAL_X = WIDTH - 1;
     const int GOAL_Y = HEIGHT - 1;
-    static Random rnd = new Random();
+    static Random rnd;
     static MazeNode[] fastNodes = new MazeNode[WIDTH * HEIGHT];
+    static char[,] map;
 
     class MazeNode
     {
@@ -36,7 +42,7 @@ class Maze
 
     static void DrawMaze()
     {
-        char[,] map = new char[WIDTH * 2 + 1, HEIGHT * 2 + 1];
+        map = new char[WIDTH * 2 + 1, HEIGHT * 2 + 1];
 
         for (int j = 0; j < HEIGHT; j++)
         {
@@ -154,16 +160,67 @@ class Maze
         return n.parent;
     }
 
+    class Node
+    {
+        public Node parent = null;
+        public int x = 0;
+        public int y = 0;
+        public int connections = 0;
+        public int distance = 0;
+
+        public void MakeChildren()
+        {
+
+
+
+        }
+
+    }
+
+    static Node[] nodes = new Node[1000];
+    static int nodeIndex = 0;
+    static Queue<Node> nodeQueue = new Queue<Node>();
+    static int[] intNodes = new int[1000];
+
     static void Main(string[] args)
     {
+        rnd = new Random(MAZE_SEED);
         Init();
-
         MazeNode start = fastNodes[0];
         start.parent = start;
         MazeNode last = Link(start);
         while (last != start)
             last = Link(last);
         DrawMaze();
+        
+        /*
+        if (SOLVE_BASIC_BFS)
+        {
+            Node root = new Node { x = START_X, y = START_Y };
+            HashSet<Node> visited = new HashSet<Node>();
+            Queue<Node> queue = new Queue<Node>();
+
+            queue.Enqueue(root);
+            Node current = root;
+
+            while (queue.Count > 0)
+            {
+                current = queue.Dequeue();
+                visited.Add(current);
+                if (current.x == GOAL_X && current.y == GOAL_Y)
+                    break;
+
+                if()
+                
+            }
+
+
+            while (current.parent != null)
+            {
+                current = current.parent;
+                map[current.x * 2 + 1, current.y * 2 + 1] = '.'; 
+            }
+        }*/
         Console.ReadLine();
     }
 }
