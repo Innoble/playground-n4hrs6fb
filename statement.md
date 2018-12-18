@@ -6,7 +6,7 @@ This C# template lets you get started quickly with a simple one-page playground.
 
 using System;
 
-class Program
+class Maze
 {
     const int WIDTH = 20;
     const int HEIGHT = 5;
