@@ -3,14 +3,14 @@
 This C# template lets you get started quickly with a simple one-page playground.
 
 ```C# runnable
-// { autofold
+
 using System;
 
 class Program
 {
     const int WIDTH = 30;
     const int HEIGHT = 20;
-    const int HEIGHT_CHARS = HEIGHT * 2 + 1;
+// { autofold    const int HEIGHT_CHARS = HEIGHT * 2 + 1;
     const int WIDTH_CHARS = WIDTH * 2 + 1;
     static Random rnd = new Random();
     static MazeNode[] fastNodes = new MazeNode[WIDTH * HEIGHT];
