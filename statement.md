@@ -9,6 +9,7 @@ During the last contest (X-mas Rush) a good pathfinder was very important. The m
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 class Maze
 {
@@ -436,25 +437,30 @@ class Maze
             visitedArray[i] = 0;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void SetVisited(int x, int y)
     {
         visitedArray[y] |= 1 << x;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool IsAvailable(int x, int y)
     {
         return ((visitedArray[y] >> x) & 1) == 0;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static int SetIntNode(int x, int y, int distance, int connections, int parent)
     {
         return x | (y << 5) | (distance << 10) | (connections << 18) | (parent << 22);
     }
    
-    static void SetChildren(int x, int y, int currentNode)
+    static void SetChildren(int current)
     {
-        int distance = ((currentNode >> 10) & 255) + 1;
-        int connections = (currentNode >> 18) & 15;
+        int x = current & 31;
+        int y = (current >> 5) & 31;
+        int distance = ((current >> 10) & 255) + 1;
+        int connections = (current >> 18) & 15;
         int parentIndex = queueIndex - 1;
 
         if (y > 0 && (connections & 8) > 0 && IsAvailable(x, y - 1))
@@ -679,6 +685,7 @@ class Maze
                 queueCount = 0;
                 ResetVisited();
                 int startIndex = START_X + WIDTH * START_Y;
+                int endCoordinates = GOAL_X | GOAL_Y << 5;
                 int rootConnections = mapConnections[startIndex];
                 intNodes[queueCount++] = SetIntNode(START_X, START_Y, 0, rootConnections, 0);
                 SetVisited(START_X, START_Y);
@@ -686,12 +693,10 @@ class Maze
                 while (queueCount > queueIndex)
                 {
                     current = intNodes[queueIndex++];
-                    int x = current & 31;
-                    int y = (current >> 5) & 31;
-                    if (x == GOAL_X && y== GOAL_Y)
+                    if ((current & 1023) == endCoordinates)
                         break;
 
-                    SetChildren(x, y, current);
+                    SetChildren(current);
                 }
                 
             }
@@ -713,9 +718,7 @@ class Maze
             DrawMazePath();
         }
     }
-    
 }
-
 // }
 ```
 
