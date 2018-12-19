@@ -718,10 +718,7 @@ class Maze
 
             DrawMazePath();
         }
-
-        Console.ReadLine();
     }
-    
 }
 // }
 ```
