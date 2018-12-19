@@ -22,7 +22,7 @@ class Maze
     const bool BFS_NOCLASS = true;
     const int MAZE_SEED = 0;
     const int ITERATIONS = 100000;
-    // Maze generator { autofold    
+// Maze generator { autofold    
     const int HEIGHT_CHARS = HEIGHT * 2 + 1;
     const int WIDTH_CHARS = WIDTH * 2 + 1;
     const int START_X = 0;
@@ -162,9 +162,9 @@ class Maze
         }
         return n.parent;
     }
-    // }
+// }
 
-    // Other code { autofold
+// Other code { autofold
     static void DrawMazePath()
     {
         for (int j = 0; j < HEIGHT_CHARS; j++)
