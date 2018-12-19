@@ -938,7 +938,7 @@ static void ResetVisited()
         visitedArray[i] = 0;
 }
 ```
-You set a "visited" bit as follows
+You set a "visited" bit as follows:
 
 ```C#
 static void SetVisited(int x, int y)
@@ -956,5 +956,19 @@ static bool IsAvailable(int x, int y)
     return ((visitedArray[y] >> x) & 1) == 0;
 }
 ```
+Which is really just the reverse operation. We shift the bit to the rightmost location and then check if it is set with "&". The SetChildren method is now also different and uses:
+
+```C#
+SetVisited(x, y - 1);
+```
+
+instead of:
+
+```C#
+visitedHash.Add(index);
+```
+For more detail look at the full code at the top.
+
+
 
 
