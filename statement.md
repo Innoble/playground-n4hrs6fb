@@ -413,7 +413,7 @@ class Maze
     static readonly Node[] nodes = new Node[1000];
     static readonly Node[] arrayQueue = new Node[1000];
     static Queue<Node> queue  = new Queue<Node>(1000);
-    static HashSet<int> visitedHash;
+    static HashSet<int> visitedHash = new HashSet<int>();
     static readonly int[] visitedArray = new int[HEIGHT];
     static readonly int[] intNodes = new int[1000];
     static int nodeIndex = 0;
@@ -466,7 +466,8 @@ class Maze
                 int rootConnections = mapNodes[startIndex].connections;
                 current = new Node { x = START_X, y = START_Y, distance = 0, connections = rootConnections }; // root
 
-                visitedHash = new HashSet<int> { startIndex };
+                visitedHash.Clear();
+                visitedHash.Add(startIndex);
                 queue.Enqueue(current);
 
                 while (queue.Count > 0)
@@ -495,9 +496,10 @@ class Maze
                 int startIndex = START_X + WIDTH * START_Y;
                 int rootConnections = mapNodes[startIndex].connections;
                 current = nodes[nodeIndex++];// root
-                current.SetNode(START_X, START_Y, 0, rootConnections, null); 
+                current.SetNode(START_X, START_Y, 0, rootConnections, null);
 
-                visitedHash = new HashSet<int> { startIndex };
+                visitedHash.Clear();
+                visitedHash.Add(startIndex);
                 queue.Enqueue(current);
 
                 while (queue.Count > 0)
