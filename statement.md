@@ -712,8 +712,6 @@ class Maze
 
             DrawMazePath();
         }
-
-        Console.ReadLine();
     }
     
 }
@@ -728,17 +726,11 @@ I am going to assume one map representation. There are many ways to do a map rep
 
 ```C#
 
-static readonly MazeNode[] mapNodes = new MazeNode[WIDTH * HEIGHT];
+int[] mapConnections = new int[WIDTH * HEIGHT];
+int indexToMapElement = x + WIDTH * y;
 
-class MazeNode
-{
-    public int x = 0;
-    public int y = 0;
-    public int explored = 15;
-    public int connections = 0;
-    public MazeNode parent = null;
-}
 ```
+This is a basic way to have a 1D array for a 2D map. Each element is a 4 bit number containing the information about the sides of the map that a tile can connect to, in clockwise direction. 1001 means it can connect up top, not to the right, not down, but can connect to the left. This is not a very compact representation. In X-mas Rush I had 7 map tiles (a full row) in one element. This is very specific to that small map though. You can't do this if you have more than 8 tiles. 
 
 
 ## Basic BFS
