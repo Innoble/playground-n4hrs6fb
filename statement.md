@@ -412,7 +412,7 @@ class Maze
 
     static readonly Node[] nodes = new Node[1000];
     static readonly Node[] arrayQueue = new Node[1000];
-    static Queue<Node> queue;
+    static Queue<Node> queue  = new Queue<Node>(1000);
     static HashSet<int> visitedHash;
     static readonly int[] visitedArray = new int[HEIGHT];
     static readonly int[] intNodes = new int[1000];
@@ -531,7 +531,6 @@ class Maze
                 current = nodes[nodeIndex++];// root
                 current.SetNode(START_X, START_Y, 0, rootConnections, null);
                 SetVisited(START_X, START_Y);
-                queue = new Queue<Node>(1000);
                 queue.Enqueue(current);
 
                 while (queue.Count > 0)
