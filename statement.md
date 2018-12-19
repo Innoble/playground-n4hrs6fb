@@ -4,7 +4,7 @@ During the last contest (X-mas Rush) a good pathfinder was very important. The m
     Dont make the width larger, because some parts depend on the width fitting inside a 32 bit integer. I do this because most gameboards
     in CG games are smaller than this. If you encounter a wider board... be creative!
 
-    I will explain the various versions in the next pages.
+I will explain the various versions in the next pages.
 
 ```C# runnable
 using System;
