@@ -792,50 +792,63 @@ We need to add reachable neighbors to the queue. We do this with the following m
     We then also look up the connections for the top neighbor. That one has to be able to connect downward, which means 0010  (= 2). If all is good, then we enqueue the top neighbor and add it to the visited hash. All the other neighbors work similarly. The neighbor has its parent set to the current node (with "this" ). 
 
 ```C#
-   public void AddChildren()
-        { 
-            int index = x + WIDTH * (y - 1);
-            if (y > 0 && (connections & 8) > 0 && !visitedHash.Contains(index))
-            {
-                int nConnections = mapConnections[index];
-                if ((nConnections & 2) > 0)
-                {
-                    queue.Enqueue(new Node(x, y - 1, distance + 1, nConnections, this));
-                    visitedHash.Add(index);
-                }
-            }
-
-            index = x + WIDTH * (y + 1);
-            if (y < HEIGHT -1 && (connections & 2) > 0 && !visitedHash.Contains(index))
-            {
-                int nConnections = mapConnections[index];
-                if ((nConnections & 8) > 0)
-                {
-                    queue.Enqueue(new Node(x, y + 1, distance + 1, nConnections, this));
-                    visitedHash.Add(index);
-                }
-            }
-
-            index = x -1 + WIDTH * y;
-            if (x > 0 && (connections & 1) > 0 && !visitedHash.Contains(index))
-            {
-                int nConnections = mapConnections[index];
-                if ((nConnections & 4) > 0)
-                {
-                    queue.Enqueue(new Node(x - 1, y, distance + 1, nConnections, this));
-                    visitedHash.Add(index);
-                }
-            }
-
-            index = x + 1 + WIDTH * y;
-            if (x < WIDTH - 1 && (connections & 4) > 0 && !visitedHash.Contains(index))
-            {
-                int nConnections = mapConnections[index];
-                if ((nConnections & 1) > 0)
-                {
-                    queue.Enqueue(new Node(x+ 1, y, distance + 1, nConnections,  this));
-                    visitedHash.Add(index);
-                }
-            }
+public void AddChildren()
+{ 
+    int index = x + WIDTH * (y - 1);
+    if (y > 0 && (connections & 8) > 0 && !visitedHash.Contains(index))
+    {
+        int nConnections = mapConnections[index];
+        if ((nConnections & 2) > 0)
+        {
+            queue.Enqueue(new Node(x, y - 1, distance + 1, nConnections, this));
+            visitedHash.Add(index);
         }
+    }
+
+    index = x + WIDTH * (y + 1);
+    if (y < HEIGHT -1 && (connections & 2) > 0 && !visitedHash.Contains(index))
+    {
+        int nConnections = mapConnections[index];
+        if ((nConnections & 8) > 0)
+        {
+            queue.Enqueue(new Node(x, y + 1, distance + 1, nConnections, this));
+            visitedHash.Add(index);
+        }
+    }
+
+    index = x -1 + WIDTH * y;
+    if (x > 0 && (connections & 1) > 0 && !visitedHash.Contains(index))
+    {
+        int nConnections = mapConnections[index];
+        if ((nConnections & 4) > 0)
+        {
+            queue.Enqueue(new Node(x - 1, y, distance + 1, nConnections, this));
+            visitedHash.Add(index);
+        }
+    }
+
+    index = x + 1 + WIDTH * y;
+    if (x < WIDTH - 1 && (connections & 4) > 0 && !visitedHash.Contains(index))
+    {
+        int nConnections = mapConnections[index];
+        if ((nConnections & 1) > 0)
+        {
+            queue.Enqueue(new Node(x+ 1, y, distance + 1, nConnections,  this));
+            visitedHash.Add(index);
+        }
+    }
+}
 ```
+
+When the algorithm ends we can output the path with the following code:
+
+```C#
+while (current.parent != null)
+{
+    current = current.parent;
+    if (current.parent != null)
+        map[current.x * 2 + 1, current.y * 2 + 1] = PATH;
+}
+```
+
+We can backtrack through the tiles on the map, each time selecting the parent node as a new current node. You can then choose what to do with this node. You may want to output its coordinates or a string saying "LEFT" or "UP". In this case, I output to a 2D char array that works to create a maze picture with a dotted path. It depends on what you need.
