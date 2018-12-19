@@ -764,21 +764,21 @@ The parent is needed if you want to backtrack to the beginning and output the mo
 ### The main part of the algorithm
 
 ```C#
-    int startIndex = START_X + WIDTH * START_Y;
-    int rootConnections = mapConnections[startIndex];
-    current = new Node { x = START_X, y = START_Y, distance = 0, connections = rootConnections }; // root
-    visitedHash.Clear();
-    visitedHash.Add(startIndex);
-    queue.Enqueue(current);
+int startIndex = START_X + WIDTH * START_Y;
+int rootConnections = mapConnections[startIndex];
+current = new Node { x = START_X, y = START_Y, distance = 0, connections = rootConnections }; // root
+visitedHash.Clear();
+visitedHash.Add(startIndex);
+queue.Enqueue(current);
 
-    while (queue.Count > 0)
-    {
-        current = queue.Dequeue();
-        if (current.x == GOAL_X && current.y == GOAL_Y)
-            break;
+while (queue.Count > 0)
+{
+    current = queue.Dequeue();
+    if (current.x == GOAL_X && current.y == GOAL_Y)
+        break;
 
-        current.AddChildren();
-    } 
+    current.AddChildren();
+} 
 ```
 
 The startindex is used to find the connections of the root to other tiles in the map. We create the first node (tile) and reference it with "current". We also use a HashSet<int>  to keep track of visited tiles. If we've been to a tile, we don't go there again. We add the start index so we can't visit the root tile again. We put the root tile in the queue. 
@@ -923,7 +923,7 @@ When doing the benchmark. You'll notice a doubling of your performance if you us
 
 ## BFS without hash
 
-The hashset is pretty fast, especially if you use a version with integers (don't use HashSet<Node> !). However, if you are travelling most of the map or the map is small, an integer with bits set to 1 or a boolean array that you set to true, will be more efficient. In this example I use an int-array. The code will change as follows:
+The hashset is pretty fast, especially if you use a version with integers (don't use HashSet of nodes!). However, if you are travelling most of the map or the map is small, an integer array with bits set to 1 or a boolean array that you set to true, will be more efficient. In this example I use an int-array. The code will change as follows:
 
 ```C#
  static readonly int[] visitedArray = new int[HEIGHT];
@@ -967,8 +967,182 @@ instead of:
 ```C#
 visitedHash.Add(index);
 ```
-For more detail look at the full code at the top.
+For more detail look at the full code at the top. This change will triple your performance in some cases.
 
 
+## BFS without queue
 
+The queue is an essential part of BFS. Using the queue datastructure clearly shows your intent. However, a queue is slower than an array. Moreover, you now have an array + a queue. What if you could do both with the same array? You need to make the following changes:
+
+Instead of:
+
+```C#
+static int nodeIndex = 0;
+```
+You will have:
+
+```C#
+static int queueCount = 0;
+static int queueIndex = 0;
+```
+
+And your main method will change to:
+
+```C#
+queueIndex = 0;
+queueCount = 0;
+ResetVisited();
+int startIndex = START_X + WIDTH * START_Y;
+int rootConnections = mapConnections[startIndex];
+current = nodes[queueCount++];// root
+current.SetNode(START_X, START_Y, 0, rootConnections, null);
+SetVisited(START_X, START_Y);
+
+while (queueCount > queueIndex)
+{
+    current = nodes[queueIndex++];
+    if (current.x == GOAL_X && current.y == GOAL_Y)
+        break;
+
+    current.SetChildrenNoQueue();
+}
+```
+
+You notice we use the same "nodes" array both as the source of "creating" our current node and also to queue it. When we "create" a node, it simply means increasing the queueCount. When we "dequeue" it, we simply increase the queueIndex. If the queueindex becomes equal to the queueCount, it means we ran out of queued nodes and the algorithm ends.
+
+The SetChildren method also changes:
+
+It now has: 
+
+```C#
+Node child = nodes[queueCount++];
+```
+
+instead of:
+
+```C#
+Node child = nodes[nodeIndex++];
+```
+
+and we no longer "Enqueue" because we no longer have a queue. If you make this change, you will increase you performance by 50% or so.
+
+
+## BFS without classes
+
+This last part is a hard one. It gives you about a 10-15% boost to performance, but makes your algorithm much less readable. I do not recommend this change unless you need the performance and are somewhat comfortable with using bit operations and storing a lot of information inside different bitlocations of an integer.
+
+Instead of using a class, a node is now a single integer. We store information in the integer as follows:
+
+```C#
+static int SetIntNode(int x, int y, int distance, int connections, int parent)
+{
+    return x | (y << 5) | (distance << 10) | (connections << 18) | (parent << 22);
+}
+```
+
+We store the x on the rightmost bit, the y we store 5 bits to the left. Both coordinates are given a space of 5 bits, which means they cant be larger than 31. The distance is given 8 bits in this case (18-10), which means we can store up to 255 steps of the algorithm. This would be a pretty long path, so for our purposes it is fine. We have 4 bits for the connections we used earlier and the remaining bits after 22 (to 32) contains the parentindex for when we need to backtrack. There are plenty of other ways to configure your integer layout. In X-mas Rush I stored collected questitems in there as singular bits. 101 meant I collected the first and third item. 
+
+We retrieve the information by shifting in the other direction. The set children method starts as:
+
+```C#
+static void SetChildren(int current)
+{
+    int x = current & 31;
+    int y = (current >> 5) & 31;
+    int distance = ((current >> 10) & 255) + 1;
+    int connections = (current >> 18) & 15;
+    int parentIndex = queueIndex - 1;
+```
+
+To get x we need to "&" with 31, which is really just "0000000000000000000000000011111". Doing this operation only keeps the rightmost 5 bits and thats what we need. We do something similar with the other information. We increase the distance because the children will have +1 distance. The parentindex is the queueIndex reduced by 1 (because we already increased it in the main method). The rest of the SetChildren method now looks like this:
+
+```C#
+if (y > 0 && (connections & 8) > 0 && IsAvailable(x, y - 1))
+{
+    int index = x + WIDTH * (y - 1);
+    int nConnections = mapConnections[index];
+    if ((nConnections & 2) > 0)
+    {
+        intNodes[queueCount++] = SetIntNode(x, y - 1, distance, nConnections, parentIndex);
+        SetVisited(x, y - 1);
+    }
+}
+
+
+if (y < HEIGHT - 1 && (connections & 2) > 0 && IsAvailable(x, y + 1))
+{
+    int index = x + WIDTH * (y + 1);
+    int nConnections = mapConnections[index];
+    if ((nConnections & 8) > 0)
+    {
+        intNodes[queueCount++] = SetIntNode(x, y + 1, distance, nConnections, parentIndex);
+        SetVisited(x, y + 1);
+    }
+}
+
+if (x > 0 && (connections & 1) > 0 && IsAvailable(x - 1, y))
+{
+    int index = x - 1 + WIDTH * y;
+    int nConnections = mapConnections[index];
+    if ((nConnections & 4) > 0)
+    {
+        intNodes[queueCount++] = SetIntNode(x - 1, y, distance, nConnections, parentIndex);
+        SetVisited(x - 1, y);
+    }
+}
+
+if (x < WIDTH - 1 && (connections & 4) > 0 && IsAvailable(x + 1, y))
+{
+    int index = x + 1 + WIDTH * y;
+    int nConnections = mapConnections[index];
+    if ((nConnections & 1) > 0)
+    {
+        intNodes[queueCount++] = SetIntNode(x + 1, y, distance, nConnections, parentIndex);
+        SetVisited(x + 1, y);
+    }
+}
+```
+
+The main method looks like this. Notice the complete lack of objects aside from the global integer array. Our end-of-BFS check is now a comparison with the rightmost 10 bits of our current node (the x and y). 
+
+```C#
+int current = 0;
+for (int i = 0; i < ITERATIONS; i++)
+{
+    queueIndex = 0;
+    queueCount = 0;
+    ResetVisited();
+    int startIndex = START_X + WIDTH * START_Y;
+    int endCoordinates = GOAL_X | GOAL_Y << 5;
+    int rootConnections = mapConnections[startIndex];
+    intNodes[queueCount++] = SetIntNode(START_X, START_Y, 0, rootConnections, 0);
+    SetVisited(START_X, START_Y);
+
+    while (queueCount > queueIndex)
+    {
+        current = intNodes[queueIndex++];
+        if ((current & 1023) == endCoordinates)
+            break;
+
+        SetChildren(current);
+    }
+}
+```
+
+Outputting the path also involves bitshifting to get the parents.
+
+```C#
+int parentIndex = current >> 22;
+while (parentIndex > 0)
+{
+    current = intNodes[parentIndex];
+    parentIndex = current >> 22;
+    int x = current & 31;
+    int y = (current >> 5) & 31;
+    map[x * 2 + 1, y * 2 + 1] = PATH;    
+}
+
+```
+    
+    
 
