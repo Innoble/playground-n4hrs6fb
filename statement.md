@@ -7,10 +7,13 @@ class Maze
 {
     const int WIDTH = 20;
     const int HEIGHT = 5;
-    const bool SOLVE_BASIC_BFS = true;
-    const bool SOLVE_FAST_BFS = true;
+    const bool BFS_BASIC = true;
+    const bool BFS_NODEARRAY = true;
+    const bool BFS_NOHASH = true;
+    const bool BFS_NOQUEUE = true;
+    const bool BFS_NOCLASS = true;
     const int MAZE_SEED = 0;
-    const int ITERATIONS = 10000;
+    const int ITERATIONS = 100000;
     // Maze generator { autofold    
     const int HEIGHT_CHARS = HEIGHT * 2 + 1;
     const int WIDTH_CHARS = WIDTH * 2 + 1;
@@ -20,8 +23,8 @@ class Maze
     const int GOAL_Y = HEIGHT - 1;
     const char ORIGIN = 'P';
     const char GOAL = 'X';
-    const char WALL = '\u2589';
-    const char PATH = '\u2219';
+    const char WALL = '#';
+    const char PATH = '.';
     const char EMPTY = ' ';
     static Random rnd;
     static readonly MazeNode[] mapNodes = new MazeNode[WIDTH * HEIGHT];
@@ -173,59 +176,266 @@ class Maze
         public int connections = 0;
         public int distance = 0;
 
-        public void AddChildren()
+        public void SetNode(int _x, int _y, int _distance, int _connections, Node _parent)
+        {
+            x = _x;
+            y = _y;
+            distance = _distance;
+            connections = _connections;
+            parent = _parent;
+
+        }
+
+        public Node(int _x, int _y, int _distance, int _connections, Node _parent)
+        {
+            x = _x;
+            y = _y;
+            distance = _distance;
+            connections = _connections;
+            parent = _parent;
+        }
+
+        public Node() { }
+
+        public void SetChildrenNoQueue()
         {
             int index = x + WIDTH * (y - 1);
-            if (y > 0 && (connections & 8) > 0 && !visited.Contains(index))
+            if (y > 0 && (connections & 8) > 0 && IsAvailable(x, y - 1))
             {
                 int nConnections = mapNodes[index].connections;
                 if ((nConnections & 2) > 0)
                 {
-                    queue.Enqueue(new Node { x = x, y = y - 1, connections = nConnections, distance = distance + 1, parent = this });
-                    visited.Add(index);
+                    Node child = nodes[nodeIndex++];
+                    child.SetNode(x, y - 1, distance + 1, nConnections, this);
+                    arrayQueue[queueCount++] = child;
+                    SetVisited(x, y - 1);
                 }
             }
 
             index = x + WIDTH * (y + 1);
-            if (y < HEIGHT -1 && (connections & 2) > 0 && !visited.Contains(index))
+            if (y < HEIGHT - 1 && (connections & 2) > 0 && IsAvailable(x, y + 1))
             {
                 int nConnections = mapNodes[index].connections;
                 if ((nConnections & 8) > 0)
                 {
-                    queue.Enqueue(new Node { x = x, y = y + 1, connections = nConnections, distance = distance + 1, parent = this });
-                    visited.Add(index);
+                    Node child = nodes[nodeIndex++];
+                    child.SetNode(x, y + 1, distance + 1, nConnections, this);
+                    arrayQueue[queueCount++] = child;
+                    SetVisited(x, y + 1);
                 }
             }
 
-            index = x -1 + WIDTH * y;
-            if (x > 0 && (connections & 1) > 0 && !visited.Contains(index))
+            index = x - 1 + WIDTH * y;
+            if (x > 0 && (connections & 1) > 0 && IsAvailable(x - 1, y))
             {
                 int nConnections = mapNodes[index].connections;
                 if ((nConnections & 4) > 0)
                 {
-                    queue.Enqueue(new Node { x = x - 1, y = y, connections = nConnections, distance = distance + 1, parent = this });
-                    visited.Add(index);
+                    Node child = nodes[nodeIndex++];
+                    child.SetNode(x - 1, y, distance + 1, nConnections, this);
+                    arrayQueue[queueCount++] = child;
+                    SetVisited(x - 1, y);
                 }
             }
 
             index = x + 1 + WIDTH * y;
-            if (x < WIDTH - 1 && (connections & 4) > 0 && !visited.Contains(index))
+            if (x < WIDTH - 1 && (connections & 4) > 0 && IsAvailable(x + 1, y))
             {
                 int nConnections = mapNodes[index].connections;
                 if ((nConnections & 1) > 0)
                 {
-                    queue.Enqueue(new Node { x = x + 1, y = y, connections = nConnections, distance = distance + 1, parent = this });
-                    visited.Add(index);
+                    Node child = nodes[nodeIndex++];
+                    child.SetNode(x + 1, y, distance + 1, nConnections, this);
+                    arrayQueue[queueCount++] = child;
+                    SetVisited(x + 1, y);
+                }
+            }
+        }
+
+        public void SetChildrenNoHash()
+        {
+            int index = x + WIDTH * (y - 1);
+            if (y > 0 && (connections & 8) > 0 && IsAvailable(x, y-1))
+            {
+                int nConnections = mapNodes[index].connections;
+                if ((nConnections & 2) > 0)
+                {
+                    Node child = nodes[nodeIndex++];
+                    child.SetNode(x, y - 1, distance + 1, nConnections, this);
+                    queue.Enqueue(child);
+                    SetVisited(x, y - 1);
+                }
+            }
+
+            index = x + WIDTH * (y + 1);
+            if (y < HEIGHT - 1 && (connections & 2) > 0 && IsAvailable(x, y + 1))
+            {
+                int nConnections = mapNodes[index].connections;
+                if ((nConnections & 8) > 0)
+                {
+                    Node child = nodes[nodeIndex++];
+                    child.SetNode(x, y + 1, distance + 1, nConnections, this);
+                    queue.Enqueue(child);
+                    SetVisited(x, y + 1);
+                }
+            }
+
+            index = x - 1 + WIDTH * y;
+            if (x > 0 && (connections & 1) > 0 && IsAvailable(x - 1, y))
+            {
+                int nConnections = mapNodes[index].connections;
+                if ((nConnections & 4) > 0)
+                {
+                    Node child = nodes[nodeIndex++];
+                    child.SetNode(x - 1, y, distance + 1, nConnections, this);
+                    queue.Enqueue(child);
+                    SetVisited(x - 1, y);
+                }
+            }
+
+            index = x + 1 + WIDTH * y;
+            if (x < WIDTH - 1 && (connections & 4) > 0 && IsAvailable(x + 1, y))
+            {
+                int nConnections = mapNodes[index].connections;
+                if ((nConnections & 1) > 0)
+                {
+                    Node child = nodes[nodeIndex++];
+                    child.SetNode(x + 1, y, distance + 1, nConnections, this);
+                    queue.Enqueue(child);
+                    SetVisited(x + 1, y);
+                }
+            }
+        }
+
+        public void SetChildren()
+        {
+            int index = x + WIDTH * (y - 1);
+            if (y > 0 && (connections & 8) > 0 && !visitedHash.Contains(index))
+            {
+                int nConnections = mapNodes[index].connections;
+                if ((nConnections & 2) > 0)
+                {
+                    Node child = nodes[nodeIndex++];
+                    child.SetNode(x, y - 1, distance + 1, nConnections, this);
+                    queue.Enqueue(child);
+                    visitedHash.Add(index);
+                }
+            }
+
+            index = x + WIDTH * (y + 1);
+            if (y < HEIGHT - 1 && (connections & 2) > 0 && !visitedHash.Contains(index))
+            {
+                int nConnections = mapNodes[index].connections;
+                if ((nConnections & 8) > 0)
+                {
+                    Node child = nodes[nodeIndex++];
+                    child.SetNode(x, y + 1, distance + 1, nConnections, this);
+                    queue.Enqueue(child);
+                    visitedHash.Add(index);
+                }
+            }
+
+            index = x - 1 + WIDTH * y;
+            if (x > 0 && (connections & 1) > 0 && !visitedHash.Contains(index))
+            {
+                int nConnections = mapNodes[index].connections;
+                if ((nConnections & 4) > 0)
+                {
+                    Node child = nodes[nodeIndex++];
+                    child.SetNode(x-1, y, distance + 1, nConnections, this);
+                    queue.Enqueue(child);
+                    visitedHash.Add(index);
+                }
+            }
+
+            index = x + 1 + WIDTH * y;
+            if (x < WIDTH - 1 && (connections & 4) > 0 && !visitedHash.Contains(index))
+            {
+                int nConnections = mapNodes[index].connections;
+                if ((nConnections & 1) > 0)
+                {
+                    Node child = nodes[nodeIndex++];
+                    child.SetNode(x+1, y, distance + 1, nConnections, this);
+                    queue.Enqueue(child);
+                    visitedHash.Add(index);
+                }
+            }
+        }
+
+        public void AddChildren()
+        { 
+            int index = x + WIDTH * (y - 1);
+            if (y > 0 && (connections & 8) > 0 && !visitedHash.Contains(index))
+            {
+                int nConnections = mapNodes[index].connections;
+                if ((nConnections & 2) > 0)
+                {
+                    queue.Enqueue(new Node(x, y - 1, distance + 1, nConnections, this));
+                    visitedHash.Add(index);
+                }
+            }
+
+            index = x + WIDTH * (y + 1);
+            if (y < HEIGHT -1 && (connections & 2) > 0 && !visitedHash.Contains(index))
+            {
+                int nConnections = mapNodes[index].connections;
+                if ((nConnections & 8) > 0)
+                {
+                    queue.Enqueue(new Node(x, y + 1, distance + 1, nConnections, this));
+                    visitedHash.Add(index);
+                }
+            }
+
+            index = x -1 + WIDTH * y;
+            if (x > 0 && (connections & 1) > 0 && !visitedHash.Contains(index))
+            {
+                int nConnections = mapNodes[index].connections;
+                if ((nConnections & 4) > 0)
+                {
+                    queue.Enqueue(new Node(x - 1, y, distance + 1, nConnections, this));
+                    visitedHash.Add(index);
+                }
+            }
+
+            index = x + 1 + WIDTH * y;
+            if (x < WIDTH - 1 && (connections & 4) > 0 && !visitedHash.Contains(index))
+            {
+                int nConnections = mapNodes[index].connections;
+                if ((nConnections & 1) > 0)
+                {
+                    queue.Enqueue(new Node(x+ 1, y, distance + 1, nConnections,  this));
+                    visitedHash.Add(index);
                 }
             }
         }
     }
 
-    static readonly Node[] nodes = new Node[1000];  
+    static readonly Node[] nodes = new Node[1000];
+    static readonly Node[] arrayQueue = new Node[1000];
     static Queue<Node> queue;
-    static HashSet<int> visited;
+    static HashSet<int> visitedHash;
+    static readonly int[] visitedArray = new int[HEIGHT];
     static readonly int[] intNodes = new int[1000];
-    static readonly int nodeIndex = 0;
+    static int nodeIndex = 0;
+    static int queueCount = 0;
+    static int queueIndex = 0;
+
+    static void ResetVisited()
+    {
+        for (int i = 0; i < visitedArray.Length; i++)
+            visitedArray[i] = 0;
+    }
+
+    static void SetVisited(int x, int y)
+    {
+        visitedArray[y] |= 1 << x;
+    }
+
+    static bool IsAvailable(int x, int y)
+    {
+        return ((visitedArray[y] >> x) & 1) == 0;
+    }
+
 
     static void Main(string[] args)
     {
@@ -239,9 +449,14 @@ class Maze
 
         CreateMaze();
 
+        for (int i = 0; i < nodes.Length; i++)
+            nodes[i] = new Node();
+      
+
         watch.Reset();
         watch.Start();
-        if (SOLVE_BASIC_BFS)
+
+        if (BFS_BASIC)
         {
             Node current = null;
             for (int i = 0; i < ITERATIONS; i++)
@@ -251,7 +466,7 @@ class Maze
                 int rootConnections = mapNodes[startIndex].connections;
                 current = new Node { x = START_X, y = START_Y, distance = 0, connections = rootConnections }; // root
 
-                visited = new HashSet<int> { startIndex };
+                visitedHash = new HashSet<int> { startIndex };
                 queue = new Queue<Node>(1000);
                 queue.Enqueue(current);
 
@@ -266,7 +481,147 @@ class Maze
             }
 
             double time = watch.Elapsed.TotalMilliseconds;
-            Console.WriteLine(time);
+            Console.WriteLine("BFS Basic: "+ time + " milliseconds"); 
+        }
+
+        watch.Reset();
+        watch.Start();
+
+        if (BFS_NODEARRAY)
+        {
+            Node current = null;
+            for (int i = 0; i < ITERATIONS; i++)
+            {
+                nodeIndex = 0;
+                int startIndex = START_X + WIDTH * START_Y;
+                int rootConnections = mapNodes[startIndex].connections;
+                current = nodes[nodeIndex++];// root
+                current.SetNode(START_X, START_Y, 0, rootConnections, null); 
+
+                visitedHash = new HashSet<int> { startIndex };
+                queue = new Queue<Node>(1000);
+                queue.Enqueue(current);
+
+                while (queue.Count > 0)
+                {
+                    current = queue.Dequeue();
+                    if (current.x == GOAL_X && current.y == GOAL_Y)
+                        break;
+
+                    current.SetChildren();
+                }
+            }
+
+            double time = watch.Elapsed.TotalMilliseconds;
+            Console.WriteLine("BFS Node array: " + time + " milliseconds");
+        }
+
+        watch.Reset();
+        watch.Start();
+
+        if (BFS_NOHASH)
+        {
+            Node current = null;
+            for (int i = 0; i < ITERATIONS; i++)
+            {
+                nodeIndex = 0;
+                ResetVisited();
+                int startIndex = START_X + WIDTH * START_Y;
+                int rootConnections = mapNodes[startIndex].connections;
+                current = nodes[nodeIndex++];// root
+                current.SetNode(START_X, START_Y, 0, rootConnections, null);
+                SetVisited(START_X, START_Y);
+                queue = new Queue<Node>(1000);
+                queue.Enqueue(current);
+
+                while (queue.Count > 0)
+                {
+                    current = queue.Dequeue();
+                    if (current.x == GOAL_X && current.y == GOAL_Y)
+                        break;
+
+                    current.SetChildrenNoHash();
+                }
+            }
+
+            double time = watch.Elapsed.TotalMilliseconds;
+            Console.WriteLine("BFS No hash: " + time + " milliseconds");
+        }
+
+        watch.Reset();
+        watch.Start();
+
+        if (BFS_NOQUEUE)
+        {
+            Node current = null;
+            for (int i = 0; i < ITERATIONS; i++)
+            {
+                nodeIndex = 0;
+                queueIndex = 0;
+                queueCount = 0;
+                ResetVisited();
+                int startIndex = START_X + WIDTH * START_Y;
+                int rootConnections = mapNodes[startIndex].connections;
+                current = nodes[nodeIndex++];// root
+                current.SetNode(START_X, START_Y, 0, rootConnections, null);
+                SetVisited(START_X, START_Y);
+                arrayQueue[queueCount++] = current;
+                
+                queue.Enqueue(current);
+
+                while (queueCount > queueIndex)
+                {
+                    current = arrayQueue[queueIndex++];
+                    if (current.x == GOAL_X && current.y == GOAL_Y)
+                        break;
+
+                    current.SetChildrenNoQueue();
+                }
+            }
+
+            double time = watch.Elapsed.TotalMilliseconds;
+            Console.WriteLine("BFS No queue: " + time + " milliseconds");
+
+            while (current.parent != null)
+            {
+                current = current.parent;
+                if (current.parent != null)
+                    map[current.x * 2 + 1, current.y * 2 + 1] = PATH;
+            }
+
+            DrawMazePath();
+        }
+        /*
+        if (BFS_NOCLASS)
+        {
+            for (int i = 0; i < ITERATIONS; i++)
+            {
+                nodeIndex = 0;
+                queueIndex = 0;
+                queueCount = 0;
+                ResetVisited();
+                int startIndex = START_X + WIDTH * START_Y;
+                int rootConnections = mapNodes[startIndex].connections;
+                int current = 
+                current = nodes[nodeIndex++];// root
+                current.SetNode(START_X, START_Y, 0, rootConnections, null);
+                SetVisited(START_X, START_Y);
+                arrayQueue[queueCount++] = current;
+
+                queue.Enqueue(current);
+
+                while (queueCount > queueIndex)
+                {
+                    current = arrayQueue[queueIndex++];
+                    if (current.x == GOAL_X && current.y == GOAL_Y)
+                        break;
+
+                    current.SetChildrenNoQueue();
+                }
+            }
+
+            double time = watch.Elapsed.TotalMilliseconds;
+            Console.WriteLine("BFS No queue: " + time + " milliseconds");
 
             while (current.parent != null)
             {
@@ -278,8 +633,7 @@ class Maze
             DrawMazePath();
         }
 
-        
-        Console.ReadLine();
+        Console.ReadLine();*/
     }
 }
 
