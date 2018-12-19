@@ -21,7 +21,7 @@ class Maze
     const bool BFS_NOCLASS = true;
     const int MAZE_SEED = 0;
     const int ITERATIONS = 100000;
-// Maze generator { autofold    
+    // Code { autofold    
     const int HEIGHT_CHARS = HEIGHT * 2 + 1;
     const int WIDTH_CHARS = WIDTH * 2 + 1;
     const int START_X = 0;
@@ -35,6 +35,7 @@ class Maze
     const char EMPTY = ' ';
     static Random rnd;
     static readonly MazeNode[] mapNodes = new MazeNode[WIDTH * HEIGHT];
+    static readonly int[] mapConnections = new int[WIDTH * HEIGHT];
     static readonly char[,] map = new char[WIDTH * 2 + 1, HEIGHT * 2 + 1];
     static readonly Stopwatch watch = new Stopwatch();
 
@@ -161,9 +162,7 @@ class Maze
         }
         return n.parent;
     }
-// }
 
-// Other code { autofold
     static void DrawMazePath()
     {
         for (int j = 0; j < HEIGHT_CHARS; j++)
@@ -213,7 +212,7 @@ class Maze
             if (y > 0 && (connections & 8) > 0 && IsAvailable(x, y - 1))
             {
                 int index = x + WIDTH * (y - 1);
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 2) > 0)
                 {
                     Node child = nodes[queueCount++];
@@ -226,7 +225,7 @@ class Maze
             if (y < HEIGHT - 1 && (connections & 2) > 0 && IsAvailable(x, y + 1))
             {
                 int index = x + WIDTH * (y + 1);
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 8) > 0)
                 {
                     Node child = nodes[queueCount++];
@@ -239,7 +238,7 @@ class Maze
             if (x > 0 && (connections & 1) > 0 && IsAvailable(x - 1, y))
             {
                 int index = x - 1 + WIDTH * y;
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 4) > 0)
                 {
                     Node child = nodes[queueCount++];
@@ -252,7 +251,7 @@ class Maze
             if (x < WIDTH - 1 && (connections & 4) > 0 && IsAvailable(x + 1, y))
             {
                 int index = x + 1 + WIDTH * y;
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 1) > 0)
                 {
                     Node child = nodes[queueCount++];
@@ -267,7 +266,7 @@ class Maze
             if (y > 0 && (connections & 8) > 0 && IsAvailable(x, y-1))
             {
                 int index = x + WIDTH * (y - 1);
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 2) > 0)
                 {
                     Node child = nodes[nodeIndex++];
@@ -280,7 +279,7 @@ class Maze
             if (y < HEIGHT - 1 && (connections & 2) > 0 && IsAvailable(x, y + 1))
             {
                 int index = x + WIDTH * (y + 1);
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 8) > 0)
                 {
                     Node child = nodes[nodeIndex++];
@@ -294,7 +293,7 @@ class Maze
             if (x > 0 && (connections & 1) > 0 && IsAvailable(x - 1, y))
             {
                 int index = x - 1 + WIDTH * y;
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 4) > 0)
                 {
                     Node child = nodes[nodeIndex++];
@@ -308,7 +307,7 @@ class Maze
             if (x < WIDTH - 1 && (connections & 4) > 0 && IsAvailable(x + 1, y))
             {
                 int index = x + 1 + WIDTH * y;
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 1) > 0)
                 {
                     Node child = nodes[nodeIndex++];
@@ -324,7 +323,7 @@ class Maze
             int index = x + WIDTH * (y - 1);
             if (y > 0 && (connections & 8) > 0 && !visitedHash.Contains(index))
             {
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 2) > 0)
                 {
                     Node child = nodes[nodeIndex++];
@@ -337,7 +336,7 @@ class Maze
             index = x + WIDTH * (y + 1);
             if (y < HEIGHT - 1 && (connections & 2) > 0 && !visitedHash.Contains(index))
             {
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 8) > 0)
                 {
                     Node child = nodes[nodeIndex++];
@@ -350,7 +349,7 @@ class Maze
             index = x - 1 + WIDTH * y;
             if (x > 0 && (connections & 1) > 0 && !visitedHash.Contains(index))
             {
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 4) > 0)
                 {
                     Node child = nodes[nodeIndex++];
@@ -363,7 +362,7 @@ class Maze
             index = x + 1 + WIDTH * y;
             if (x < WIDTH - 1 && (connections & 4) > 0 && !visitedHash.Contains(index))
             {
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 1) > 0)
                 {
                     Node child = nodes[nodeIndex++];
@@ -379,7 +378,7 @@ class Maze
             int index = x + WIDTH * (y - 1);
             if (y > 0 && (connections & 8) > 0 && !visitedHash.Contains(index))
             {
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 2) > 0)
                 {
                     queue.Enqueue(new Node(x, y - 1, distance + 1, nConnections, this));
@@ -390,7 +389,7 @@ class Maze
             index = x + WIDTH * (y + 1);
             if (y < HEIGHT -1 && (connections & 2) > 0 && !visitedHash.Contains(index))
             {
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 8) > 0)
                 {
                     queue.Enqueue(new Node(x, y + 1, distance + 1, nConnections, this));
@@ -401,7 +400,7 @@ class Maze
             index = x -1 + WIDTH * y;
             if (x > 0 && (connections & 1) > 0 && !visitedHash.Contains(index))
             {
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 4) > 0)
                 {
                     queue.Enqueue(new Node(x - 1, y, distance + 1, nConnections, this));
@@ -412,7 +411,7 @@ class Maze
             index = x + 1 + WIDTH * y;
             if (x < WIDTH - 1 && (connections & 4) > 0 && !visitedHash.Contains(index))
             {
-                int nConnections = mapNodes[index].connections;
+                int nConnections = mapConnections[index];
                 if ((nConnections & 1) > 0)
                 {
                     queue.Enqueue(new Node(x+ 1, y, distance + 1, nConnections,  this));
@@ -461,7 +460,7 @@ class Maze
         if (y > 0 && (connections & 8) > 0 && IsAvailable(x, y - 1))
         {
             int index = x + WIDTH * (y - 1);
-            int nConnections = mapNodes[index].connections;
+            int nConnections = mapConnections[index];
             if ((nConnections & 2) > 0)
             {
                 intNodes[queueCount++] = SetIntNode(x, y - 1, distance, nConnections, parentIndex);
@@ -473,7 +472,7 @@ class Maze
         if (y < HEIGHT - 1 && (connections & 2) > 0 && IsAvailable(x, y + 1))
         {
             int index = x + WIDTH * (y + 1);
-            int nConnections = mapNodes[index].connections;
+            int nConnections = mapConnections[index];
             if ((nConnections & 8) > 0)
             {
                 intNodes[queueCount++] = SetIntNode(x, y + 1, distance, nConnections, parentIndex);
@@ -484,7 +483,7 @@ class Maze
         if (x > 0 && (connections & 1) > 0 && IsAvailable(x - 1, y))
         {
             int index = x - 1 + WIDTH * y;
-            int nConnections = mapNodes[index].connections;
+            int nConnections = mapConnections[index];
             if ((nConnections & 4) > 0)
             {
                 intNodes[queueCount++] = SetIntNode(x - 1, y, distance, nConnections, parentIndex);
@@ -495,7 +494,7 @@ class Maze
         if (x < WIDTH - 1 && (connections & 4) > 0 && IsAvailable(x + 1, y))
         {
             int index = x + 1 + WIDTH * y;
-            int nConnections = mapNodes[index].connections;
+            int nConnections = mapConnections[index];
             if ((nConnections & 1) > 0)
             {
                 intNodes[queueCount++] = SetIntNode(x + 1, y, distance, nConnections, parentIndex);
@@ -519,6 +518,14 @@ class Maze
         for (int i = 0; i < nodes.Length; i++)
             nodes[i] = new Node();
 
+        for (int i = 0; i < HEIGHT; i++)
+        {
+            for (int j = 0; j < WIDTH; j++)
+            {
+                mapConnections[j + i * WIDTH] = mapNodes[j + i * WIDTH].connections;
+            }
+        }
+
         if (BFS_BASIC)
         {
             GC.Collect();
@@ -528,8 +535,9 @@ class Maze
             Node current = null;
             for (int i = 0; i < ITERATIONS; i++)
             {
+            
                 int startIndex = START_X + WIDTH * START_Y;
-                int rootConnections = mapNodes[startIndex].connections;
+                int rootConnections = mapConnections[startIndex];
                 current = new Node { x = START_X, y = START_Y, distance = 0, connections = rootConnections }; // root
 
                 visitedHash.Clear();
@@ -561,7 +569,7 @@ class Maze
             {
                 nodeIndex = 0;
                 int startIndex = START_X + WIDTH * START_Y;
-                int rootConnections = mapNodes[startIndex].connections;
+                int rootConnections = mapConnections[startIndex];
                 current = nodes[nodeIndex++];// root
                 current.SetNode(START_X, START_Y, 0, rootConnections, null);
 
@@ -595,7 +603,7 @@ class Maze
                 nodeIndex = 0;
                 ResetVisited();
                 int startIndex = START_X + WIDTH * START_Y;
-                int rootConnections = mapNodes[startIndex].connections;
+                int rootConnections = mapConnections[startIndex];
                 current = nodes[nodeIndex++];// root
                 current.SetNode(START_X, START_Y, 0, rootConnections, null);
                 SetVisited(START_X, START_Y);
@@ -628,7 +636,7 @@ class Maze
                 queueCount = 0;
                 ResetVisited();
                 int startIndex = START_X + WIDTH * START_Y;
-                int rootConnections = mapNodes[startIndex].connections;
+                int rootConnections = mapConnections[startIndex];
                 current = nodes[queueCount++];// root
                 current.SetNode(START_X, START_Y, 0, rootConnections, null);
                 SetVisited(START_X, START_Y);
@@ -671,7 +679,7 @@ class Maze
                 queueCount = 0;
                 ResetVisited();
                 int startIndex = START_X + WIDTH * START_Y;
-                int rootConnections = mapNodes[startIndex].connections;
+                int rootConnections = mapConnections[startIndex];
                 intNodes[queueCount++] = SetIntNode(START_X, START_Y, 0, rootConnections, 0);
                 SetVisited(START_X, START_Y);
       
@@ -704,7 +712,10 @@ class Maze
 
             DrawMazePath();
         }
+
+        Console.ReadLine();
     }
+    
 }
 
 // }
