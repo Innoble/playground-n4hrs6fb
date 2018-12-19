@@ -757,7 +757,7 @@ class Node
 
 ```
 
-The parent is needed if you want to backtrack to the beginning and output the moves you made. This is not always necessary. In X-max Rush it usually wasn't, because many times  you only wanted to know which tiles you can reach and how many items you gathered. 
+The parent is needed if you want to backtrack to the beginning and output the moves you made. This is not always necessary. In X-mas Rush it usually wasn't, because many times  you only wanted to know which tiles you can reach and how many items you gathered. 
 
 The use of x and y are obvious. The connections are the same connections you find in the map. You can just keep them in the map if you want and only look them up whenever you need them. I am not entirely sure how this will impact performance. The (manhattan) distance travelled is not used in this benchmark but is often necessary to track, because you often have a movement limit (20 steps in X-mas Rush).
 
