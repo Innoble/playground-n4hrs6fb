@@ -3,7 +3,7 @@
 During the last contest (X-mas Rush) a good pathfinder was very important. The map was small with very short paths, so the only thing that made sense was a BFS. There are many ways to do a BFS and there are big differences in performance. I will explain a few examples in order of performance. If you only want to see the benchmark, run the code below. You can take the code and use it however you want. Just remember, it contains a lot of unnecessary code to make the comparisons properly. Make sure to clean out the useless parts. 
     Dont make the width of the map larger, because some parts depend on the width fitting inside a 32 bit integer. I do this because most gameboards in CG games are smaller than this. If you encounter a wider board... be creative! 
     
-    When talking about BFS I assume you are playing a game on a map. Of course there are more applications for BFS than just travelling a map. The code below also contains a maze generator I found here: https://en.wikipedia.org/wiki/Maze_generation_algorithm.  I adapted the C-algorithm.
+When talking about BFS I assume you are playing a game on a map. Of course there are more applications for BFS than just travelling a map. The code below also contains a maze generator I found here: https://en.wikipedia.org/wiki/Maze_generation_algorithm.  I adapted the C-algorithm.
 
 
 ```C# runnable
