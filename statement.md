@@ -16,7 +16,7 @@ class Maze
     const int WIDTH = 30;
     const int HEIGHT = 5;
     const bool BFS_BASIC = true;
-    const bool BFS_NODEARRAY = true;
+    const bool BFS_NONEW = true;
     const bool BFS_NOHASH = true;
     const bool BFS_NOQUEUE = true;
     const bool BFS_NOCLASS = true;
@@ -564,7 +564,7 @@ class Maze
             Console.WriteLine("BFS Basic: "+ time + " milliseconds"); 
         }
 
-        if (BFS_NODEARRAY)
+        if (BFS_NONEW)
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -594,7 +594,7 @@ class Maze
             }
 
             double time = watch.Elapsed.TotalMilliseconds;
-            Console.WriteLine("BFS Node array: " + time + " milliseconds");
+            Console.WriteLine("BFS No new: " + time + " milliseconds");
         }
 
         if (BFS_NOHASH)
@@ -717,7 +717,10 @@ class Maze
 
             DrawMazePath();
         }
+
+        Console.ReadLine();
     }
+    
 }
 // }
 ```
