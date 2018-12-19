@@ -730,15 +730,30 @@ int[] mapConnections = new int[WIDTH * HEIGHT];
 int indexToMapElement = x + WIDTH * y;
 
 ```
-This is a basic way to have a 1D array for a 2D map. Each element is a 4 bit number containing the information about the sides of the map that a tile can connect to, in clockwise direction. 1001 means it can connect up top, not to the right, not down, but can connect to the left. This is not a very compact representation. In X-mas Rush I had 7 map tiles (a full row) in one element. This is very specific to that small map though. You can't do this if you have more than 8 tiles. 
+This is a basic way to have a 1D array for a 2D map. Each element is a 4 bit number containing the information about the sides of the map that a tile can connect to, in clockwise direction. 1001 means it can connect up top, not to the right, not down, but can connect to the left. This is not a very compact representation. In X-mas Rush I had 7 map tiles (a full row) in one element. This is very specific to that small map though. You can't do this if you have more than 8 tiles (8 * 4 = 32 bit). 
 
 
 ## Basic BFS
 
-BFS is about finding the shortest path by using a queue. You start in a location on the map and add all neighbouring tiles you can travel to, to this queue (you "enqueue"). Then you take the first item on the queue (you "dequeue") and look for all neighbouring tiles again. Add them to the queue again and so on and so forth. You do this until you reach some predefined goal. In the X-mas Rush contest this goal was an item to collect. After collecting this item, you could reset your BFS and run it again. You could also make a list of reachable tiles at the end in order to have nodes to put in a search layer. I don't want to get into that. We just assume that there is a start and an end and thats all.
+BFS is about finding the shortest path by using a queue. You start in a location on the map and add all neighbouring tiles you can travel to, to this queue (you "enqueue"). Then you take the first item on the queue (you "dequeue") and look for all neighbouring tiles again, add them to the queue again and so on and so forth. You do this until you reach some predefined goal. In the X-mas Rush contest this goal was an item to collect. After collecting this item, you could reset your BFS and run it again. You could also make a list of reachable tiles at the end in order to have nodes to put in a search layer for use in minimax or MCTS (or something else). I don't want to get into that. We just assume that there is a start and an end and thats it.
 
 The most simple BFS has two major parts: 
 
+### The Node class
+
+The node class for the simple BFS looks like this:
+
+```C#
+
+public Node parent = null;
+public int x = 0;
+public int y = 0;
+public int connections = 0;
+public int distance = 0;
+
+```
+
+The parent is needed if you want to backtrack to the beginning and output the moves you made. This is not always necessary. In X-max Rush it wasn't always, because sometimes you only wanted to know where you can end up and how many items you gathered. The use of x and y are obvious. The connections are the same connections you find in the map. You can keep them in the map if you want and just look them up whenever you need them. The (manhattan) distance travelled is not used in this benchmark but is often necessary to track, because you often have a movement limit (20 steps in X-mas Rush).
 
 
 ### The main part of the algorithm
