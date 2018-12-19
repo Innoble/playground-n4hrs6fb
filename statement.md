@@ -851,4 +851,71 @@ while (current.parent != null)
 }
 ```
 
-We can backtrack through the tiles on the map, each time selecting the parent node as a new current node. You can then choose what to do with this node. You may want to output its coordinates or a string saying "LEFT" or "UP". In this case, I output to a 2D char array that works to create a maze picture with a dotted path. It depends on what you need.
+We can backtrack through the tiles on the map, each time selecting the parent node as a new current node. You can then choose what to do with this node. You may want to output its coordinates or a string saying "LEFT" or "UP". In this case, I output to a 2D char array called "map" that works to create a maze picture with a dotted path. It depends on what you need. The "PATH" in this case is a '.' character. 
+
+## BFS without new (no garbage!)
+
+You may have noticed in my code that I create new BFS-nodes when I create children. This is not the only way to do it. Another way is to create a global array with enough nodes in it that you keep reusing. In this way you don't create any garbage for the garbage collector to clean up. Instead of a constructor we have a "set" method and this slightly changes our Addchildren method. See the code below:
+
+```C#
+ static readonly Node[] nodes = new Node[1000];
+ static int nodeIndex = 0;
+}
+'''
+
+public void SetChildren()
+{
+    int index = x + WIDTH * (y - 1);
+    if (y > 0 && (connections & 8) > 0 && !visitedHash.Contains(index))
+    {
+        int nConnections = mapConnections[index];
+        if ((nConnections & 2) > 0)
+        {
+            Node child = nodes[nodeIndex++];
+            child.SetNode(x, y - 1, distance + 1, nConnections, this);
+            queue.Enqueue(child);
+            visitedHash.Add(index);
+        }
+    }
+
+    index = x + WIDTH * (y + 1);
+    if (y < HEIGHT - 1 && (connections & 2) > 0 && !visitedHash.Contains(index))
+    {
+        int nConnections = mapConnections[index];
+        if ((nConnections & 8) > 0)
+        {
+            Node child = nodes[nodeIndex++];
+            child.SetNode(x, y + 1, distance + 1, nConnections, this);
+            queue.Enqueue(child);
+            visitedHash.Add(index);
+        }
+    }
+
+    index = x - 1 + WIDTH * y;
+    if (x > 0 && (connections & 1) > 0 && !visitedHash.Contains(index))
+    {
+        int nConnections = mapConnections[index];
+        if ((nConnections & 4) > 0)
+        {
+            Node child = nodes[nodeIndex++];
+            child.SetNode(x-1, y, distance + 1, nConnections, this);
+            queue.Enqueue(child);
+            visitedHash.Add(index);
+        }
+    }
+
+    index = x + 1 + WIDTH * y;
+    if (x < WIDTH - 1 && (connections & 4) > 0 && !visitedHash.Contains(index))
+    {
+        int nConnections = mapConnections[index];
+        if ((nConnections & 1) > 0)
+        {
+            Node child = nodes[nodeIndex++];
+            child.SetNode(x+1, y, distance + 1, nConnections, this);
+            queue.Enqueue(child);
+            visitedHash.Add(index);
+        }
+    }
+}
+'''
+
