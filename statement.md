@@ -18,6 +18,11 @@ class Maze
     const int START_Y = 0;
     const int GOAL_X = WIDTH - 1;
     const int GOAL_Y = HEIGHT - 1;
+    const char ORIGIN = 'P';
+    const char GOAL = 'X';
+    const char WALL = '\u2589';
+    const char PATH = '\u2219';
+    const char EMPTY = ' ';
     static Random rnd;
     static readonly MazeNode[] mapNodes = new MazeNode[WIDTH * HEIGHT];
     static readonly char[,] map = new char[WIDTH * 2 + 1, HEIGHT * 2 + 1];
@@ -46,30 +51,30 @@ class Maze
             for (int i = 0; i < WIDTH; i++)
             {
                 MazeNode node = mapNodes[i + j * WIDTH];
-                map[i * 2, j * 2] = '\u2588';
-                map[i * 2 + 1, j * 2 + 1] = ' ';
+                map[i * 2, j * 2] = WALL;
+                map[i * 2 + 1, j * 2 + 1] = EMPTY;
 
                 if ((node.connections & 1) > 0)
-                    map[i * 2, j * 2 + 1] = ' ';
+                    map[i * 2, j * 2 + 1] = EMPTY;
                 else
-                    map[i * 2, j * 2 + 1] = '\u2588';
+                    map[i * 2, j * 2 + 1] = WALL;
 
                 if ((node.connections & 8) > 0)
-                    map[i * 2 + 1, j * 2] = ' ';
+                    map[i * 2 + 1, j * 2] = EMPTY;
                 else
-                    map[i * 2 + 1, j * 2] = '\u2588';
+                    map[i * 2 + 1, j * 2] = WALL;
             }
         }
 
         for (int j = 0; j < HEIGHT_CHARS; j++)
-            map[WIDTH_CHARS - 1, j] = '\u2588';
+            map[WIDTH_CHARS - 1, j] = WALL;
 
 
         for (int i = 0; i < WIDTH_CHARS - 1; i++)
-            map[i, HEIGHT_CHARS - 1] = '\u2588';
+            map[i, HEIGHT_CHARS - 1] = WALL;
 
-        map[START_X * 2 + 1, START_Y * 2 + 1] = 'P';
-        map[GOAL_X * 2 + 1, GOAL_Y * 2 + 1] = 'X';
+        map[START_X * 2 + 1, START_Y * 2 + 1] = ORIGIN;
+        map[GOAL_X * 2 + 1, GOAL_Y * 2 + 1] = GOAL;
     }
 
     static void DrawMazePath()
@@ -267,7 +272,7 @@ class Maze
             {
                 current = current.parent;
                 if (current.parent != null)
-                    map[current.x * 2 + 1, current.y * 2 + 1] = '\u2219';
+                    map[current.x * 2 + 1, current.y * 2 + 1] = PATH;
             }
 
             DrawMazePath();
