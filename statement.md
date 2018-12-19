@@ -1,7 +1,9 @@
 # Optimizing breadth first search
 
-During the last contest (X-mas Rush) a good pathfinder was very important. The map was small with very short paths, so the only thing that made sense was a BFS. There are many ways to do a BFS and there are big differences in performance. I will explain a few examples in order of performance. If you only want to see the benchmark, run the code below. You can take the code and use it however you want. Just remember, it contains a lot of code to make the comparisons properly. Make sure to clean out the useless parts. 
-    Dont make the width of the map larger, because some parts depend on the width fitting inside a 32 bit integer. I do this because most gameboards in CG games are smaller than this. If you encounter a wider board... be creative! When talking about BFS I assume you are playing a game on a map. Of course there are more applications for BFS than just travelling a map. The code below also contains a maze generator I found here: https://en.wikipedia.org/wiki/Maze_generation_algorithm   I adapted the C-algorithm.
+During the last contest (X-mas Rush) a good pathfinder was very important. The map was small with very short paths, so the only thing that made sense was a BFS. There are many ways to do a BFS and there are big differences in performance. I will explain a few examples in order of performance. If you only want to see the benchmark, run the code below. You can take the code and use it however you want. Just remember, it contains a lot of unnecessary code to make the comparisons properly. Make sure to clean out the useless parts. 
+    Dont make the width of the map larger, because some parts depend on the width fitting inside a 32 bit integer. I do this because most gameboards in CG games are smaller than this. If you encounter a wider board... be creative! 
+    
+    When talking about BFS I assume you are playing a game on a map. Of course there are more applications for BFS than just travelling a map. The code below also contains a maze generator I found here: https://en.wikipedia.org/wiki/Maze_generation_algorithm.  I adapted the C-algorithm.
 
 
 ```C# runnable
@@ -735,18 +737,17 @@ int[] mapConnections = new int[WIDTH * HEIGHT];
 int indexToMapElement = x + WIDTH * y;
 
 ```
-This is a basic way to have a 1D array for a 2D map. Each element is a 4 bit number containing the information about the sides of the map that a tile can connect to, in clockwise direction. 1001 means it can connect up top, not to the right, not down, but can connect to the left. This is not a very compact representation. In X-mas Rush I had 7 map tiles (a full row) in one element. This is very specific to that small map though. You can't do this if you have more than 8 tiles (8 * 4 = 32 bit). 
-
+This is a very commonly used way to have a 1D array for a 2D map. Each element is a 4 bit number containing the information about the sides of the map that a tile can connect to, in clockwise direction. 1001 means it can connect up top, not to the right, not down, but can connect to the left. This is not the most compact representation. In X-mas Rush I had 7 map tiles (a full row) in one array element. This is very specific to that small map though. You can't do this if you have more than 8 tiles (8 * 4 = 32 bit). Maps can also be objects in a 1D array or even objects in a 2D array. However, since this article is about performance, I want to keep it somewhat performant. It would not be good if the map representation is the bottleneck here. 
 
 ## Basic BFS
 
-BFS is about finding the shortest path by using a queue. You start in a location on the map and add all neighbouring tiles you can travel to, to this queue (you "enqueue"). Then you take the first item on the queue (you "dequeue") and look for all neighbouring tiles again, add them to the queue again and so on and so forth. You do this until you reach some predefined goal. In the X-mas Rush contest this goal was an item to collect. After collecting this item, you could reset your BFS and run it again. You could also make a list of reachable tiles at the end in order to have nodes to put in a search layer for use in minimax or MCTS (or something else). I don't want to get into that. We just assume that there is a start and an end and thats it.
+BFS is about finding the shortest path by using a queue. You start in a location on the map and add all neighbouring tiles you can travel to, to this queue (this means you "enqueue" the tiles). Then you take the first item on the queue (you "dequeue") and look for all neighbouring tiles again, add them to the queue again and so on and so forth. You do this until you reach some predefined goal. In the X-mas Rush contest this goal was an item to collect. After collecting this item, you could reset your BFS and run it again. You could also make a list of reachable tiles at the end of your BFS run in order to have nodes to put in a search layer for use in minimax or MCTS (or something else). I don't want to get into that. We just assume that there is a start and a goal and thats it.
 
 The most simple BFS has two major parts: 
 
 ### The Node class
 
-The node class for the simple BFS looks like this:
+The node class for a simple BFS probably looks like this:
 
 ```C#
 class Node
@@ -759,7 +760,9 @@ class Node
 
 ```
 
-The parent is needed if you want to backtrack to the beginning and output the moves you made. This is not always necessary. In X-max Rush it wasn't always, because sometimes you only wanted to know where you can end up and how many items you gathered. The use of x and y are obvious. The connections are the same connections you find in the map. You can keep them in the map if you want and just look them up whenever you need them. The (manhattan) distance travelled is not used in this benchmark but is often necessary to track, because you often have a movement limit (20 steps in X-mas Rush).
+The parent is needed if you want to backtrack to the beginning and output the moves you made. This is not always necessary. In X-max Rush it usually wasn't, because many times  you only wanted to know which tiles you can reach and how many items you gathered. 
+
+The use of x and y are obvious. The connections are the same connections you find in the map. You can just keep them in the map if you want and only look them up whenever you need them. I am not entirely sure how this will impact performance. The (manhattan) distance travelled is not used in this benchmark but is often necessary to track, because you often have a movement limit (20 steps in X-mas Rush).
 
 ### The main part of the algorithm
 
@@ -781,13 +784,13 @@ while (queue.Count > 0)
 } 
 ```
 
-The startindex is used to find the connections of the root to other tiles in the map. We create the first node (tile) and reference it with "current". We also use a HashSet<int>  to keep track of visited tiles. If we've been to a tile, we don't go there again. We add the start index so we can't visit the root tile again. We put the root tile in the queue. 
+The startindex is used to find the connections of the root to other tiles in the map. We create the first node (tile) and reference it with "current". We also use a HashSet<int>  to keep track of visited tiles. If we've been to a tile, we don't go there again. We add the start index to this hash so we can't visit the root tile again. We put the root tile in the queue. 
 
 In the while loop we always take 1 tile out of the queue, check if its the end tile and otherwise add children to it. Once the end tile has been reached, we stop. The hash set is defined globally and is cleared each time we do this BFS. The queue has a capacity set to 1000. if you do not set the capacity, it will slow down your algorithm as the capacity needs to be increased every time the queue grows. 
 
 ### Adding the children
 
-We need to add reachable neighbors to the queue. We do this with the following method. There are 4 possible neighbor. Let's look at the first part specifically. This is the top neighbor. We first create an index to the map for this neighbor. It works the same way as I showed before, only now the y coordinate is 1 lower. We check if the y is larger than 0, otherwise we're at the upper boundary of the maze. We also check if the connection is possible. "8" means "1000" which means the top bit is set and we can connect to the top neighbor. We also check if the visited hash already contains the neighbor. In that case, we can't add it. 
+We need to add reachable neighbors to the queue. We do this with the following method. There are 4 possible neighbors. Let's look at the first part specifically: this is the top neighbor. We first create an index to the map for this neighbor. It works the same way as I showed before, only now the y coordinate is 1 lower (y-1). We check if the y is larger than 0, because otherwise we're at the upper boundary of the maze. We also check if the connection is allowed for this particular tile. The "8" means "1000" which means the top bit is set and we can connect to the top neighbor. We also check if the visited hash already contains the neighbor. In that case, we can't add it. 
 
     We then also look up the connections for the top neighbor. That one has to be able to connect downward, which means 0010  (= 2). If all is good, then we enqueue the top neighbor and add it to the visited hash. All the other neighbors work similarly. The neighbor has its parent set to the current node (with "this" ). 
 
@@ -804,7 +807,7 @@ public void AddChildren()
             visitedHash.Add(index);
         }
     }
-
+// More code { autofold 
     index = x + WIDTH * (y + 1);
     if (y < HEIGHT -1 && (connections & 2) > 0 && !visitedHash.Contains(index))
     {
@@ -838,6 +841,7 @@ public void AddChildren()
         }
     }
 }
+// }
 ```
 
 When the algorithm ends we can output the path with the following code:
@@ -877,7 +881,7 @@ public void SetChildren()
             visitedHash.Add(index);
         }
     }
-
+// More code { autofold  
     index = x + WIDTH * (y + 1);
     if (y < HEIGHT - 1 && (connections & 2) > 0 && !visitedHash.Contains(index))
     {
@@ -917,6 +921,7 @@ public void SetChildren()
         }
     }
 }
+// }
 ```
 
 When doing the benchmark. You'll notice a doubling of your performance if you use enough iterations.
@@ -1067,7 +1072,7 @@ if (y > 0 && (connections & 8) > 0 && IsAvailable(x, y - 1))
         SetVisited(x, y - 1);
     }
 }
-
+// More code { autofold   
 
 if (y < HEIGHT - 1 && (connections & 2) > 0 && IsAvailable(x, y + 1))
 {
@@ -1101,6 +1106,7 @@ if (x < WIDTH - 1 && (connections & 4) > 0 && IsAvailable(x + 1, y))
         SetVisited(x + 1, y);
     }
 }
+// }
 ```
 
 The main method looks like this. Notice the complete lack of objects aside from the global integer array. Our end-of-BFS check is now a comparison with the rightmost 10 bits of our current node (the x and y). 
