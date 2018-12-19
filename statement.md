@@ -467,7 +467,6 @@ class Maze
                 current = new Node { x = START_X, y = START_Y, distance = 0, connections = rootConnections }; // root
 
                 visitedHash = new HashSet<int> { startIndex };
-                queue = new Queue<Node>(1000);
                 queue.Enqueue(current);
 
                 while (queue.Count > 0)
@@ -499,7 +498,6 @@ class Maze
                 current.SetNode(START_X, START_Y, 0, rootConnections, null); 
 
                 visitedHash = new HashSet<int> { startIndex };
-                queue = new Queue<Node>(1000);
                 queue.Enqueue(current);
 
                 while (queue.Count > 0)
