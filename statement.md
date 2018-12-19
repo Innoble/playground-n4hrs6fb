@@ -1,8 +1,7 @@
 # Optimizing breadth first search
 
-During the last contest (X-mas Rush) a good pathfinder was very important. The map was small, with very short paths so the only thing that made sense was a BFS. There are many ways to do a BFS and there are big differences in performance. I will explain a few examples in order of performance. If you only want to see the benchmark, run the code below. You can take the code and use it however you want. Just remember, it contains a lot of code to make the comparisons properly. Make sure to clean out the useless bits.
-    Dont make the width larger, because some parts depend on the width fitting inside a 32 bit integer. I do this because most gameboards
-    in CG games are smaller than this. If you encounter a wider board... be creative! When talking about BFS I assume you are playing a game on a map. Of course there are more applications for BFS than just travelling a map.
+During the last contest (X-mas Rush) a good pathfinder was very important. The map was small, with very short paths so the only thing that made sense was a BFS. There are many ways to do a BFS and there are big differences in performance. I will explain a few examples in order of performance. If you only want to see the benchmark, run the code below. You can take the code and use it however you want. Just remember, it contains a lot of code to make the comparisons properly. Make sure to clean out the useless parts. 
+    Dont make the width of the map larger, because some parts depend on the width fitting inside a 32 bit integer. I do this because most gameboards in CG games are smaller than this. If you encounter a wider board... be creative! When talking about BFS I assume you are playing a game on a map. Of course there are more applications for BFS than just travelling a map. The code below also contains a maze generator I found here: https://en.wikipedia.org/wiki/Maze_generation_algorithm   I adapted the C-algorithm
 
 
 ```C# runnable
@@ -750,25 +749,23 @@ The most simple BFS has two major parts:
 The node class for the simple BFS looks like this:
 
 ```C#
-
-public Node parent = null;
-public int x = 0;
-public int y = 0;
-public int connections = 0;
-public int distance = 0;
+class Node
+{
+    public Node parent = null;
+    public int x = 0;
+    public int y = 0;
+    public int connections = 0;
+    public int distance = 0;
 
 ```
 
 The parent is needed if you want to backtrack to the beginning and output the moves you made. This is not always necessary. In X-max Rush it wasn't always, because sometimes you only wanted to know where you can end up and how many items you gathered. The use of x and y are obvious. The connections are the same connections you find in the map. You can keep them in the map if you want and just look them up whenever you need them. The (manhattan) distance travelled is not used in this benchmark but is often necessary to track, because you often have a movement limit (20 steps in X-mas Rush).
 
-
 ### The main part of the algorithm
-
-As is seen below: We 
 
 ```C#
     int startIndex = START_X + WIDTH * START_Y;
-    int rootConnections = mapNodes[startIndex].connections;
+    int rootConnections = mapConnections[startIndex];
     current = new Node { x = START_X, y = START_Y, distance = 0, connections = rootConnections }; // root
     visitedHash.Clear();
     visitedHash.Add(startIndex);
@@ -783,3 +780,7 @@ As is seen below: We
         current.AddChildren();
     } 
 ```
+
+The startindex is used to find the connections of the root to other tiles in the map. We create the first node and reference it with "current". We also use a HashSet<int>  to keep track of visited tiles. If we've been to a tile, we don't go there again. We add the start index so we can't visit the root tile again. We put the root tile in the queue. 
+
+In the while loop we always take 1 tile out of the queue, check if its the end tile and otherwise add children to it. Once the end tile has been reached, we stop.
