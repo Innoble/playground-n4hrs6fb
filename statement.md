@@ -807,7 +807,11 @@ public void AddChildren()
             visitedHash.Add(index);
         }
     }
-// More code { autofold 
+```
+The rest of the method (for the other directions): 
+
+```C#
+ 
     index = x + WIDTH * (y + 1);
     if (y < HEIGHT -1 && (connections & 2) > 0 && !visitedHash.Contains(index))
     {
@@ -841,7 +845,6 @@ public void AddChildren()
         }
     }
 }
-// }
 ```
 
 When the algorithm ends we can output the path with the following code:
@@ -859,11 +862,11 @@ We can backtrack through the tiles on the map, each time selecting the parent no
 
 ## BFS without new (no garbage!)
 
-You may have noticed in my code that I create new BFS-nodes when I create children. This is not the only way to do it. Another way is to create a global array with enough nodes in it that you keep reusing. In this way you don't create any garbage for the garbage collector to clean up. Instead of a constructor we have a "set" method and this slightly changes our Addchildren method. See the code below:
+You may have noticed in my code that I create new BFS-nodes when I create children. This is not the only way to do it. Another way is to create a global array with enough nodes in it that you keep reusing every time you need to do a BFS. In this way you don't create any garbage for the garbage collector to clean up. Instead of a constructor we have a "set" method and this slightly changes our Addchildren method as well. See the code below:
 
 ```C#
- static readonly Node[] nodes = new Node[1000];
- static int nodeIndex = 0;
+static readonly Node[] nodes = new Node[1000];
+static int nodeIndex = 0;
 ```
 
 ```C#
@@ -881,7 +884,7 @@ public void SetChildren()
             visitedHash.Add(index);
         }
     }
-// More code { autofold  
+
     index = x + WIDTH * (y + 1);
     if (y < HEIGHT - 1 && (connections & 2) > 0 && !visitedHash.Contains(index))
     {
@@ -921,20 +924,19 @@ public void SetChildren()
         }
     }
 }
-// }
 ```
 
 When doing the benchmark. You'll notice a doubling of your performance if you use enough iterations.
 
 ## BFS without hash
 
-The hashset is pretty fast, especially if you use a version with integers (don't use HashSet of nodes!). However, if you are travelling most of the map or the map is small, an integer array with bits set to 1 or a boolean array that you set to true, will be more efficient. In this example I use an int-array. The code will change as follows:
+The hashset is pretty fast, especially if you use a version with integers (don't use a HashSet of nodes!). However, if you are travelling across most of the map or the map is small, an integer array with bits set to 1 or a boolean array that you set to true, will be more efficient. In this example I use an int-array. The code will change as follows:
 
 ```C#
  static readonly int[] visitedArray = new int[HEIGHT];
 ```
-The array is reset at the beginning of the algorithm. With C++ you would do this using memset, which makes it extremely fast.
 
+The array is reset at the beginning of the algorithm. With C++ you would do this using memset, which makes it extremely fast.
 
 ```C#
 static void ResetVisited()
@@ -972,7 +974,7 @@ instead of:
 ```C#
 visitedHash.Add(index);
 ```
-For more detail look at the full code at the top. This change will triple your performance in some cases.
+For more detail look at the full code at the top. This change will be a large boost to your performance (tripling it in some cases).
 
 
 ## BFS without queue
@@ -1072,7 +1074,6 @@ if (y > 0 && (connections & 8) > 0 && IsAvailable(x, y - 1))
         SetVisited(x, y - 1);
     }
 }
-// More code { autofold   
 
 if (y < HEIGHT - 1 && (connections & 2) > 0 && IsAvailable(x, y + 1))
 {
@@ -1106,10 +1107,9 @@ if (x < WIDTH - 1 && (connections & 4) > 0 && IsAvailable(x + 1, y))
         SetVisited(x + 1, y);
     }
 }
-// }
 ```
 
-The main method looks like this. Notice the complete lack of objects aside from the global integer array. Our end-of-BFS check is now a comparison with the rightmost 10 bits of our current node (the x and y). 
+The main method is found below. Notice the complete lack of objects aside from the global integer array. Our end-of-BFS check is now a comparison with the rightmost 10 bits (1023 = 1111111111) of our current node (these 10 bits contain the x and y). 
 
 ```C#
 int current = 0;
@@ -1149,6 +1149,7 @@ while (parentIndex > 0)
 }
 
 ```
-    
-    
 
+## Some final words
+
+Writing this article was useful for me as it gave me some good practice at optimizing. The current version is faster than what I used in the contest. If anyone has ideas to make it even faster, or maybe to just point out something silly I did, do let me know. I will fix any mistakes and I will code any new idea that I think might be faster and add it to the list.
