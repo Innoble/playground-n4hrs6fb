@@ -1,10 +1,9 @@
 # Optimizing breadth first search
 
-During the last contest (X-mas Rush) a good pathfinder was very important. The map was small, with very short paths so the only thing that made sense was a BFS. There are many ways to do a BFS and there are big differences in performance. I will explain a few examples in order of performance. If you want to skip straight ahead to to the benchmark, run the code below. You can take the code and use it however you want. Just remember, it contains a lot of code to make the comparisons properly. Make sure to clean out the useless bits.
+During the last contest (X-mas Rush) a good pathfinder was very important. The map was small, with very short paths so the only thing that made sense was a BFS. There are many ways to do a BFS and there are big differences in performance. I will explain a few examples in order of performance. If you only want to see the benchmark, run the code below. You can take the code and use it however you want. Just remember, it contains a lot of code to make the comparisons properly. Make sure to clean out the useless bits.
     Dont make the width larger, because some parts depend on the width fitting inside a 32 bit integer. I do this because most gameboards
-    in CG games are smaller than this. If you encounter a wider board... be creative!
+    in CG games are smaller than this. If you encounter a wider board... be creative! When talking about BFS I assume you are playing a game on a map. Of course there are more applications for BFS than just travelling a map.
 
-I will explain the various versions in the next pages.
 
 ```C# runnable
 using System;
@@ -529,7 +528,6 @@ class Maze
             Node current = null;
             for (int i = 0; i < ITERATIONS; i++)
             {
-            
                 int startIndex = START_X + WIDTH * START_Y;
                 int rootConnections = mapNodes[startIndex].connections;
                 current = new Node { x = START_X, y = START_Y, distance = 0, connections = rootConnections }; // root
@@ -710,4 +708,54 @@ class Maze
 }
 
 // }
+```
+
+## The map representation
+
+I am going to assume one map representation. There are many ways to do a map representation and the way it is done could impact the usefulness and speed of the various BFS versions. The code is seen below:
+
+
+```C#
+
+static readonly MazeNode[] mapNodes = new MazeNode[WIDTH * HEIGHT];
+
+class MazeNode
+{
+    public int x = 0;
+    public int y = 0;
+    public int explored = 15;
+    public int connections = 0;
+    public MazeNode parent = null;
+}
+```
+
+
+## Basic BFS
+
+BFS is about finding the shortest path by using a queue. You start in a location on the map and add all neighbouring tiles you can travel to, to this queue (you "enqueue"). Then you take the first item on the queue (you "dequeue") and look for all neighbouring tiles again. Add them to the queue again and so on and so forth. You do this until you reach some predefined goal. In the X-mas Rush contest this goal was an item to collect. After collecting this item, you could reset your BFS and run it again. You could also make a list of reachable tiles at the end in order to have nodes to put in a search layer. I don't want to get into that. We just assume that there is a start and an end and thats all.
+
+The most simple BFS has two major parts: 
+
+
+
+### The main part of the algorithm
+
+As is seen below: We 
+
+```C#
+    int startIndex = START_X + WIDTH * START_Y;
+    int rootConnections = mapNodes[startIndex].connections;
+    current = new Node { x = START_X, y = START_Y, distance = 0, connections = rootConnections }; // root
+    visitedHash.Clear();
+    visitedHash.Add(startIndex);
+    queue.Enqueue(current);
+
+    while (queue.Count > 0)
+    {
+        current = queue.Dequeue();
+        if (current.x == GOAL_X && current.y == GOAL_Y)
+            break;
+
+        current.AddChildren();
+    } 
 ```
