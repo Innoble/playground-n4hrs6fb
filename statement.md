@@ -783,7 +783,7 @@ while (queue.Count > 0)
 
 The startindex is used to find the connections of the root to other tiles in the map. We create the first node (tile) and reference it with "current". We also use a HashSet<int>  to keep track of visited tiles. If we've been to a tile, we don't go there again. We add the start index to this hash so we can't visit the root tile again. We put the root tile in the queue. 
 
-In the while loop we always take 1 tile out of the queue, check if its the end tile and otherwise add children to it. Once the end tile has been reached, we stop. The hash set is defined globally and is cleared each time we do this BFS. The queue has a capacity set to 1000. if you do not set the capacity, it will slow down your algorithm as the capacity needs to be increased every time the queue grows. 
+In the while loop we always take 1 tile out of the queue, check if it's the end tile and otherwise add children to it. Once the end tile has been reached, we stop. The hash set is defined globally and is cleared each time we do this BFS. The queue has a capacity set to 1000. if you do not set the capacity, it will slow down your algorithm as the capacity needs to be increased every time the queue grows. 
 
 ### Adding the children
 
