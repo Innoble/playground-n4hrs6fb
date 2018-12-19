@@ -861,8 +861,9 @@ You may have noticed in my code that I create new BFS-nodes when I create childr
  static readonly Node[] nodes = new Node[1000];
  static int nodeIndex = 0;
 }
-'''
+```
 
+```C#
 public void SetChildren()
 {
     int index = x + WIDTH * (y - 1);
@@ -917,5 +918,5 @@ public void SetChildren()
         }
     }
 }
-'''
+```
 
