@@ -923,7 +923,7 @@ public void SetChildren()
 }
 ```
 
-When doing the benchmark. You'll notice a doubling of your performance if you use enough iterations.
+When doing the benchmark. You'll sometimes notice a doubling of your performance if you use enough iterations. Sometimes the improvement is less, but still significant.
 
 ## BFS without hash
 
