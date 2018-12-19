@@ -781,6 +781,61 @@ The parent is needed if you want to backtrack to the beginning and output the mo
     } 
 ```
 
-The startindex is used to find the connections of the root to other tiles in the map. We create the first node and reference it with "current". We also use a HashSet<int>  to keep track of visited tiles. If we've been to a tile, we don't go there again. We add the start index so we can't visit the root tile again. We put the root tile in the queue. 
+The startindex is used to find the connections of the root to other tiles in the map. We create the first node (tile) and reference it with "current". We also use a HashSet<int>  to keep track of visited tiles. If we've been to a tile, we don't go there again. We add the start index so we can't visit the root tile again. We put the root tile in the queue. 
 
-In the while loop we always take 1 tile out of the queue, check if its the end tile and otherwise add children to it. Once the end tile has been reached, we stop.
+In the while loop we always take 1 tile out of the queue, check if its the end tile and otherwise add children to it. Once the end tile has been reached, we stop. The hash set is defined globally and is cleared each time we do this BFS. The queue has a capacity set to 1000. if you do not set the capacity, it will slow down your algorithm as the capacity needs to be increased every time the queue grows. 
+
+### Adding the children
+
+We need to add reachable neighbors to the queue. We do this with the following method. There are 4 possible neighbor. Let's look at the first part specifically. This is the top neighbor. We first create an index to the map for this neighbor. It works the same way as I showed before, only now the y coordinate is 1 lower. We check if the y is larger than 0, otherwise we're at the upper boundary of the maze. We also check if the connection is possible. "8" means "1000" which means the top bit is set and we can connect to the top neighbor. We also check if the visited hash already contains the neighbor. In that case, we can't add it. 
+
+    We then also look up the connections for the top neighbor. That one has to be able to connect downward, which means 0010  (= 2). If all is good, then we enqueue the top neighbor and add it to the visited hash. All the other neighbors work similarly. The neighbor has its parent set to the current node (with "this" ). 
+
+```C#
+   public void AddChildren()
+        { 
+            int index = x + WIDTH * (y - 1);
+            if (y > 0 && (connections & 8) > 0 && !visitedHash.Contains(index))
+            {
+                int nConnections = mapConnections[index];
+                if ((nConnections & 2) > 0)
+                {
+                    queue.Enqueue(new Node(x, y - 1, distance + 1, nConnections, this));
+                    visitedHash.Add(index);
+                }
+            }
+
+            index = x + WIDTH * (y + 1);
+            if (y < HEIGHT -1 && (connections & 2) > 0 && !visitedHash.Contains(index))
+            {
+                int nConnections = mapConnections[index];
+                if ((nConnections & 8) > 0)
+                {
+                    queue.Enqueue(new Node(x, y + 1, distance + 1, nConnections, this));
+                    visitedHash.Add(index);
+                }
+            }
+
+            index = x -1 + WIDTH * y;
+            if (x > 0 && (connections & 1) > 0 && !visitedHash.Contains(index))
+            {
+                int nConnections = mapConnections[index];
+                if ((nConnections & 4) > 0)
+                {
+                    queue.Enqueue(new Node(x - 1, y, distance + 1, nConnections, this));
+                    visitedHash.Add(index);
+                }
+            }
+
+            index = x + 1 + WIDTH * y;
+            if (x < WIDTH - 1 && (connections & 4) > 0 && !visitedHash.Contains(index))
+            {
+                int nConnections = mapConnections[index];
+                if ((nConnections & 1) > 0)
+                {
+                    queue.Enqueue(new Node(x+ 1, y, distance + 1, nConnections,  this));
+                    visitedHash.Add(index);
+                }
+            }
+        }
+```
