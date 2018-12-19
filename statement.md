@@ -1,3 +1,11 @@
+# Optimizing breadth first search
+
+During the last contest (X-mas Rush) a good pathfinder was very important. The map was small, with very short paths so the only thing that made sense was a BFS. There are many ways to do a BFS and there are big differences in performance. I will explain a few examples in order of performance. If you want to skip straight ahead to to the benchmark, run the code below. You can take the code and use it however you want. Just remember, it contains a lot of code to make the comparisons properly. Make sure to clean out the useless bits.
+    Dont make the width larger, because some parts depend on the width fitting inside a 32 bit integer. I do this because most gameboards
+    in CG games are smaller than this. If you encounter a wider board... be creative!
+
+    I will explain the various versions in the next pages.
+
 ```C# runnable
 using System;
 using System.Collections.Generic;
@@ -508,13 +516,13 @@ class Maze
 
         for (int i = 0; i < nodes.Length; i++)
             nodes[i] = new Node();
-      
-
-        watch.Reset();
-        watch.Start();
 
         if (BFS_BASIC)
         {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            watch.Reset();
+            watch.Start();
             Node current = null;
             for (int i = 0; i < ITERATIONS; i++)
             {
@@ -541,13 +549,12 @@ class Maze
             Console.WriteLine("BFS Basic: "+ time + " milliseconds"); 
         }
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        watch.Reset();
-        watch.Start();
-
         if (BFS_NODEARRAY)
         {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            watch.Reset();
+            watch.Start();
             Node current = null;
             for (int i = 0; i < ITERATIONS; i++)
             {
@@ -575,14 +582,12 @@ class Maze
             Console.WriteLine("BFS Node array: " + time + " milliseconds");
         }
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        watch.Reset();
-        watch.Start();
-        
-
         if (BFS_NOHASH)
         {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            watch.Reset();
+            watch.Start();
             Node current = null;
             for (int i = 0; i < ITERATIONS; i++)
             {
@@ -609,13 +614,12 @@ class Maze
             Console.WriteLine("BFS No hash: " + time + " milliseconds");
         }
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        watch.Reset();
-        watch.Start();
-
         if (BFS_NOQUEUE)
         {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            watch.Reset();
+            watch.Start();
             Node current = null;
             for (int i = 0; i < ITERATIONS; i++)
             {
@@ -652,13 +656,13 @@ class Maze
             DrawMazePath();*/
         }
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        watch.Reset();
-        watch.Start();
-
         if (BFS_NOCLASS)
         {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            watch.Reset();
+            watch.Start();
+
             int current = 0;
             for (int i = 0; i < ITERATIONS; i++)
             {
@@ -692,18 +696,13 @@ class Maze
             {
                 current = intNodes[parentIndex];
                 parentIndex = current >> 22;
-                if (parentIndex > 0)
-                {
-                    int x = current & 31;
-                    int y = (current >> 5) & 31;
-                    map[x * 2 + 1, y * 2 + 1] = PATH;
-                }     
+                int x = current & 31;
+                int y = (current >> 5) & 31;
+                map[x * 2 + 1, y * 2 + 1] = PATH;    
             }
 
             DrawMazePath();
         }
-       
-        Console.ReadLine();
     }
 }
 
