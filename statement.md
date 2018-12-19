@@ -88,19 +88,6 @@ class Maze
         map[GOAL_X * 2 + 1, GOAL_Y * 2 + 1] = GOAL;
     }
 
-    static void DrawMazePath()
-    {
-        for (int j = 0; j < HEIGHT_CHARS; j++)
-        {
-            string s = "";
-            for (int i = 0; i < WIDTH_CHARS; i++)
-            {
-                s += map[i, j];
-            }
-            Console.WriteLine(s);
-        }
-    }
-
     static MazeNode Link(MazeNode n)
     {
         int x = 0;
@@ -175,6 +162,22 @@ class Maze
         }
         return n.parent;
     }
+    // }
+
+    // Other code { autofold
+    static void DrawMazePath()
+    {
+        for (int j = 0; j < HEIGHT_CHARS; j++)
+        {
+            string s = "";
+            for (int i = 0; i < WIDTH_CHARS; i++)
+            {
+                s += map[i, j];
+            }
+            Console.WriteLine(s);
+        }
+    }
+
 
     class Node
     {
