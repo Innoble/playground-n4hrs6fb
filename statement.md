@@ -860,7 +860,6 @@ You may have noticed in my code that I create new BFS-nodes when I create childr
 ```C#
  static readonly Node[] nodes = new Node[1000];
  static int nodeIndex = 0;
-}
 ```
 
 ```C#
@@ -919,4 +918,43 @@ public void SetChildren()
     }
 }
 ```
+
+When doing the benchmark. You'll notice a doubling of your performance if you use enough iterations.
+
+## BFS without hash
+
+The hashset is pretty fast, especially if you use a version with integers (don't use HashSet<Node> !). However, if you are travelling most of the map or the map is small, an integer with bits set to 1 or a boolean array that you set to true, will be more efficient. In this example I use an int-array. The code will change as follows:
+
+```C#
+ static readonly int[] visitedArray = new int[HEIGHT];
+```
+The array is reset at the beginning of the algorithm. With C++ you would do this using memset, which makes it extremely fast.
+
+
+```C#
+static void ResetVisited()
+{
+    for (int i = 0; i < visitedArray.Length; i++)
+        visitedArray[i] = 0;
+}
+```
+You set a "visited" bit as follows
+
+```C#
+static void SetVisited(int x, int y)
+{
+    visitedArray[y] |= 1 << x;
+}
+```
+This is the first time in this article we wil run into bit operations. I save the bit in the "y" element of the array on the location x bits to the left of the rightmost bit. The larger the x is, the farther to the left the bit is located.
+
+We can check if a bit is set to 0 (and thus, the tile is available) with:
+
+```C#
+static bool IsAvailable(int x, int y)
+{
+    return ((visitedArray[y] >> x) & 1) == 0;
+}
+```
+
 
