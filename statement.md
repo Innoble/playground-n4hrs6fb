@@ -3,7 +3,7 @@
 During the last contest (X-mas Rush) a good pathfinder was very important. The map was small with very short paths, so the only thing that made sense was a BFS. There are many ways to do a BFS and there are big differences in performance. I will explain a few examples in order of performance. If you only want to see the benchmark, run the code below. You can take the code and use it however you want. Just remember, it contains a lot of unnecessary code to make the comparisons properly. Make sure to clean out the useless parts. 
     Dont make the width of the map larger, because some parts depend on the width fitting inside a 32 bit integer. I do this because most gameboards in CG games are smaller than this. If you encounter a wider board... be creative! 
     
-When talking about BFS I assume you are playing a game on a map. Of course there are more applications for BFS than just travelling a map. The code below also contains a maze generator I found here: https://en.wikipedia.org/wiki/Maze_generation_algorithm.  I adapted the C-algorithm. I have an X-mas Rush post mortem here: https://tech.io/playgrounds/38549/x-mas-rush-post-mortem
+When talking about BFS I assume you are playing a game on a map. There are other applications for BFS than just travelling a map. The code below also contains a maze generator I found here: https://en.wikipedia.org/wiki/Maze_generation_algorithm.  I adapted the C-algorithm. I have an X-mas Rush post mortem here: https://tech.io/playgrounds/38549/x-mas-rush-post-mortem
 
 
 ```C# runnable
@@ -725,7 +725,7 @@ class Maze
 
 ## The map representation
 
-I am going to assume one map representation. There are many ways to do a map representation and the way it is done could impact the usefulness and speed of the various BFS versions. The code is seen below:
+I am going to assume one map representation. There are many ways to do a map representation and the way it is done could impact the usefulness and speed of the various BFS versions. 
 
 
 ```C#
@@ -734,7 +734,7 @@ int[] mapConnections = new int[WIDTH * HEIGHT];
 int indexToMapElement = x + WIDTH * y;
 
 ```
-This is a very commonly used way to have a 1D array for a 2D map. Each element is a 4 bit number containing the information about the sides of the map that a tile can connect to, in clockwise direction. 1001 means it can connect up top, not to the right, not down, but can connect to the left. This is not the most compact representation. In X-mas Rush I had 7 map tiles (a full row) in one array element. This is very specific to that small map though. You can't do this if you have more than 8 tiles (8 * 4 = 32 bit). Maps can also be objects in a 1D array or even objects in a 2D array. However, since this article is about performance, I want to keep it somewhat performant. It would not be good if the map representation is the bottleneck here. 
+This is a very commonly used way to have a 1D array for a 2D map. Each element is a 4 bit number containing the information about the sides of the map that a tile can connect to, in clockwise direction. 1001 means it can connect up top, not to the right, not down, but can connect to the left. This is not the most compact representation. In X-mas Rush I had 7 map tiles (a full row) in one array element. This is very specific to that small map though. You can't do this if you have more than 8 tiles (8 * 4 = 32 bit). Maps can also be represented by objects (as opposed to integer values) in a 1D array or even objects in a 2D array. However, since this article is about optimization, I want to keep it somewhat performant. It would not be good if the map representation is the bottleneck here. 
 
 ## Basic BFS
 
