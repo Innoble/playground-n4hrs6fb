@@ -21,6 +21,7 @@ class Maze
     const bool BFS_NOHASH = true;
     const bool BFS_NOQUEUE = true;
     const bool BFS_NOCLASS = true;
+    const bool BFS_NORESET = true;
     const int MAZE_SEED = 0;
     const int ITERATIONS = 100000;
     // Code { autofold    
@@ -38,6 +39,8 @@ class Maze
     static Random rnd;
     static readonly MazeNode[] mapNodes = new MazeNode[WIDTH * HEIGHT];
     static readonly int[] mapConnections = new int[WIDTH * HEIGHT];
+    static readonly int[] visited = new int[WIDTH * HEIGHT];
+    static int visitedIndex = 0;
     static readonly char[,] map = new char[WIDTH * 2 + 1, HEIGHT * 2 + 1];
     static readonly Stopwatch watch = new Stopwatch();
 
@@ -177,7 +180,6 @@ class Maze
             Console.WriteLine(s);
         }
     }
-
 
     class Node
     {
@@ -450,6 +452,19 @@ class Maze
         return ((visitedArray[y] >> x) & 1) == 0;
     }
 
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static void SetVisitedNoReset(int x, int y)
+    {
+        visited[ x + y*WIDTH] = visitedIndex;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool IsAvailableNoReset(int x, int y)
+    {
+        return visited[x + y * WIDTH] != visitedIndex;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static int SetIntNode(int x, int y, int distance, int connections, int parent)
     {
@@ -509,7 +524,61 @@ class Maze
             }
         }
     }
-    
+
+    static void SetChildrenNoReset(int current)
+    {
+        int x = current & 31;
+        int y = (current >> 5) & 31;
+        int distance = ((current >> 10) & 255) + 1;
+        int connections = (current >> 18) & 15;
+        int parentIndex = queueIndex - 1;
+
+        if (y > 0 && (connections & 8) > 0 && IsAvailableNoReset(x, y - 1))
+        {
+            int index = x + WIDTH * (y - 1);
+            int nConnections = mapConnections[index];
+            if ((nConnections & 2) > 0)
+            {
+                intNodes[queueCount++] = SetIntNode(x, y - 1, distance, nConnections, parentIndex);
+                SetVisitedNoReset(x, y - 1);
+            }
+        }
+
+
+        if (y < HEIGHT - 1 && (connections & 2) > 0 && IsAvailableNoReset(x, y + 1))
+        {
+            int index = x + WIDTH * (y + 1);
+            int nConnections = mapConnections[index];
+            if ((nConnections & 8) > 0)
+            {
+                intNodes[queueCount++] = SetIntNode(x, y + 1, distance, nConnections, parentIndex);
+                SetVisitedNoReset(x, y + 1);
+            }
+        }
+
+        if (x > 0 && (connections & 1) > 0 && IsAvailableNoReset(x - 1, y))
+        {
+            int index = x - 1 + WIDTH * y;
+            int nConnections = mapConnections[index];
+            if ((nConnections & 4) > 0)
+            {
+                intNodes[queueCount++] = SetIntNode(x - 1, y, distance, nConnections, parentIndex);
+                SetVisitedNoReset(x - 1, y);
+            }
+        }
+
+        if (x < WIDTH - 1 && (connections & 4) > 0 && IsAvailableNoReset(x + 1, y))
+        {
+            int index = x + 1 + WIDTH * y;
+            int nConnections = mapConnections[index];
+            if ((nConnections & 1) > 0)
+            {
+                intNodes[queueCount++] = SetIntNode(x + 1, y, distance, nConnections, parentIndex);
+                SetVisitedNoReset(x + 1, y);
+            }
+        }
+    }
+
     static void Main(string[] args)
     {
         rnd = new Random(MAZE_SEED);
@@ -704,7 +773,7 @@ class Maze
            
             double time = watch.Elapsed.TotalMilliseconds;
             Console.WriteLine("BFS No class: " + time + " milliseconds");
-
+            /*
             int parentIndex = current >> 22;
 
             while (parentIndex > 0)
@@ -715,10 +784,60 @@ class Maze
                 int y = (current >> 5) & 31;
                 map[x * 2 + 1, y * 2 + 1] = PATH;    
             }
+            
+            DrawMazePath();*/
+        }
+
+        if (BFS_NORESET)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            watch.Reset();
+            watch.Start();
+
+            int current = 0;
+            for (int i = 0; i < ITERATIONS; i++)
+            {
+                queueIndex = 0;
+                queueCount = 0;
+                visitedIndex = i+1;
+                int startIndex = START_X + WIDTH * START_Y;
+                int endCoordinates = GOAL_X | GOAL_Y << 5;
+                int rootConnections = mapConnections[startIndex];
+                intNodes[queueCount++] = SetIntNode(START_X, START_Y, 0, rootConnections, 0);
+                SetVisitedNoReset(START_X, START_Y);
+
+                while (queueCount > queueIndex)
+                {
+                    current = intNodes[queueIndex++];
+                    if ((current & 1023) == endCoordinates)
+                        break;
+
+                    SetChildrenNoReset(current);
+                }
+
+            }
+
+            double time = watch.Elapsed.TotalMilliseconds;
+            Console.WriteLine("BFS No reset: " + time + " milliseconds");
+
+            int parentIndex = current >> 22;
+
+            while (parentIndex > 0)
+            {
+                current = intNodes[parentIndex];
+                parentIndex = current >> 22;
+                int x = current & 31;
+                int y = (current >> 5) & 31;
+                map[x * 2 + 1, y * 2 + 1] = PATH;
+            }
 
             DrawMazePath();
         }
+
+        //Console.ReadLine();
     }
+    
 }
 // }
 ```
