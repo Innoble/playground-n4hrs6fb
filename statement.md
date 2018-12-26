@@ -1266,6 +1266,10 @@ while (parentIndex > 0)
 
 ```
 
+## BFS without reset
+
+Magus and Neumann both told me to try and make an visited marker. The idea is to have an integer array with an element for every map tile. Every time you do a BFS, the marker for visited is 1 higher. This way you do not have to reset. If the marker on a tile is equal to the current marker, it has been visited, otherwise it hasn't. So it doesn't matter if the tile marker is 0 or 5 if the current marker is 6. This saves you the reset step. In this particular example I didn't find much of an improvement. It seems to overall be faster (if you do a couple tries). I think this may depend a lot on the size of the map. Resetting a large map is way more expensive. Also, this way is simply easier to implement. You no longer need to worry about remaining inside the 32 bits of an integer for every map row and things like that. 
+
 ## Some final words
 
 Writing this article was useful for me as it gave me some good practice at optimizing. The current version is faster than what I used in the contest. If anyone has ideas to make it even faster, or maybe to just point out something silly I did, do let me know. I will fix any mistakes and I will code any new idea that I think might be faster and add it to the list.
