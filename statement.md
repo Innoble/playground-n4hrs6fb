@@ -23,7 +23,7 @@ class Maze
     const bool BFS_NOCLASS = true;
     const bool BFS_NORESET = true;
     const int MAZE_SEED = 0;
-    const int ITERATIONS = 100000;
+    const int ITERATIONS = 50000;
     // Code { autofold    
     const int HEIGHT_CHARS = HEIGHT * 2 + 1;
     const int WIDTH_CHARS = WIDTH * 2 + 1;
